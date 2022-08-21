@@ -80,12 +80,12 @@ class MerkleTools(object):
         for v in values:
             if do_hash:
                 if isinstance(v, str):
-                    v = v.encode('utf-8')
+                    v = v.encode()
                 v = self.hash_function(v).hexdigest()
             v = bytearray.fromhex(v)
             self.leaves.append(v)
 
-    def get_leaf(self, index):
+    def get_leaf(self, index, raw=False):
         """
         Get the leaf value at the given index.
 
@@ -93,6 +93,8 @@ class MerkleTools(object):
         ----------
         index : int
             The index of the leaf to get.
+        raw : bool
+            If True, the leaf value will be returned as a byte array.
 
         Returns
         -------
@@ -100,7 +102,10 @@ class MerkleTools(object):
             The leaf value at the given index.
 
         """
-        return self._to_hex(self.leaves[index])
+        if raw:
+            return bytes(self.leaves[index])
+        else:
+            return self._to_hex(self.leaves[index])
 
     def get_leaf_count(self):
         """
@@ -202,7 +207,7 @@ class MerkleTools(object):
                 index = int(index / 2.)
             return proof
 
-    def validate_proof_of_inclusion(self, proof, target_hash, merkle_root):
+    def verify_proof_of_inclusion(self, proof, target_hash, merkle_root):
         """
         Validate the proof for the leaf at the given index.
         

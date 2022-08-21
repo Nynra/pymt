@@ -14,6 +14,9 @@ class MerkleTree(MerkleTools):
             If True, the MerkleTree will use a secure hash function before
             the values are stored in the tree. If False, the values will be
             stored in the tree as is. Default is True.
+        hash_type : str
+            The hash function to use. Default is 'sha256'.
+        
         """
         if not isinstance(secure, bool):
             raise TypeError('`secure` must be a bool not {}'.format(type(secure)))
@@ -37,6 +40,11 @@ class MerkleTree(MerkleTools):
         do_hash : bool
             If True, the key will be hashed before being added.
             If False, the key will be added as is.
+
+        Returns
+        -------
+        None
+
         """
         if not isinstance(value, bytes):
             raise TypeError('`value` must be a bytes not {}'.format(type(value)))
@@ -59,7 +67,7 @@ class MerkleTree(MerkleTools):
         """
         if not isinstance(index, int):
             raise TypeError('`index` must be an int not {}'.format(type(index)))
-        return self.get_leaf(index)
+        return self.get_leaf(index, raw=True)
 
     def get_count(self):
         """
@@ -97,47 +105,7 @@ class MerkleTree(MerkleTools):
         return super().get_merkle_root()
 
     # PROOF FUNCTIONS
-    def _get_key(self, value):
-        """
-        Get the key of the leaf with the given value.
-
-        The key is the value as wich the original value was stored in the tree.
-        If the tree is secure, the key will be the hashed value.
-
-        IMPORTANT: The values are not RLP encoded before they are stored in the tree.
-        If you want to store RLP encoded values they need to be encoded before they are
-        passed to this function.
-        
-        Parameters
-        ----------
-        value : bytes
-            The value of the leaf to get the key of.
-        
-        Returns
-        -------
-        bytes
-            The key as wich the value is stored in the tree.
-        
-        """
-        # check if the value is allowed
-        if not isinstance(value, tuple) and not isinstance(value, list):
-            if not(isinstance(value, bytes) or isinstance(value, str)):
-                raise TypeError('`value` must be a list, tuple, bytes or str not {}'.format(
-                                type(value)))
-
-            value = [value]
-
-        for v in value:
-            if self._secure:
-                if isinstance(v, str):
-                    v = v.encode('utf-8')
-
-                # Hash the value with the set hash function
-                v = self.hash_function(v).hexdigest()
-            v = bytearray.fromhex(v)
-        return v
-    
-    def get_proof_of_inclusion(self, key, index, do_hash=False):
+    def get_proof_of_inclusion(self, index):
         """
         Get the proof of inclusion for the leaf at the given index.
 
@@ -147,8 +115,6 @@ class MerkleTree(MerkleTools):
         
         Parameters
         ----------
-        key : bytes
-            The leaf value as wich the original value was stored in the tree.
         index : int
             The index of the leaf in the tree.
         
@@ -158,20 +124,24 @@ class MerkleTree(MerkleTools):
             The proof of inclusion for the leaf at the given index.
         
         """
-        if not isinstance(key, bytes):
-            raise TypeError('`key` must be a bytes not {}'.format(type(key)))
         if not isinstance(index, int):
             raise TypeError('`index` must be an int not {}'.format(type(index)))
-        if not isinstance(do_hash, bool):
-            raise TypeError('`do_hash` must be a bool not {}'.format(type(do_hash)))
 
         # Check if the key should be hashed (only if the key wasnt already hashed)
-        if do_hash:
-            key = self.hash_function(key).digest()
+        key = self.get_leaf(index)
+        if self._secure:
+            key = key.encode()
+            key = self.hash_function(key).hexdigest()
 
-        return Proof(target_key_hash=key, root_hash=self.get_merkle_root(),
-                     proof_hash=super().get_proof_of_inclusion(index),
-                     type='MT POI')
+        # Convert the proof from str to bytes    	
+        proof = super().get_proof_of_inclusion(index)
+        byte_proof = []
+        for p in proof:
+            for k, v in p.items():
+                byte_proof.append({k.encode(): v.encode()})
+
+        return Proof(target_key_hash=key.encode(), root_hash=self.get_merkle_root().encode(),
+                     proof_hash=byte_proof, type='MT POI')
 
     def verify_proof_of_inclusion(self, proof):
         """
@@ -190,7 +160,13 @@ class MerkleTree(MerkleTools):
         if not isinstance(proof, Proof):
             raise TypeError('`proof` must be a Proof not {}'.format(type(proof)))
 
-        return super().verify_proof_of_inclusion(proof.proof)
+        # Convert the proof from bytes to string
+        str_proof = []
+        for p in proof.proof:
+            for k, v in p.items():
+                str_proof.append({k.decode(): v.decode()})
+
+        return super().verify_proof_of_inclusion(str_proof, proof.target.decode(), proof.trie_root.decode())
 
     def get_proof_of_exclusion(self):
         raise NotImplementedError('get_proof_of_exclusion is not implemented for this merkle tree.')
