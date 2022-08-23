@@ -50,6 +50,25 @@ class MerkleTree(MerkleTools):
             raise TypeError('`value` must be a bytes not {}'.format(type(value)))
         self.add_leaf(value, do_hash=self._secure)
 
+    def convert_value(self, value):
+        """
+        Convert the value to what it will be saved in the tree.
+        
+        Parameters
+        ----------
+        value : bytes
+            The value to convert.
+        
+        Returns
+        -------
+        bytes
+            The converted bytes.
+        """
+        if not isinstance(value, bytes):
+            raise TypeError('`value` must be a bytes not {}'.format(type(value)))
+
+        return self.hash_function(value).hexdigest().encode() if self._secure else value
+
     def get(self, index):
         """
         Get the leaf value at the given index.
@@ -61,13 +80,13 @@ class MerkleTree(MerkleTools):
         
         Returns
         -------
-        str
+        bytes
             The leaf value at the given index.
 
         """
         if not isinstance(index, int):
             raise TypeError('`index` must be an int not {}'.format(type(index)))
-        return self.get_leaf(index, raw=True)
+        return self.get_leaf(index).encode()
 
     def get_count(self):
         """
@@ -129,9 +148,6 @@ class MerkleTree(MerkleTools):
 
         # Check if the key should be hashed (only if the key wasnt already hashed)
         key = self.get_leaf(index)
-        if self._secure:
-            key = key.encode()
-            key = self.hash_function(key).hexdigest()
 
         # Convert the proof from str to bytes    	
         proof = super().get_proof_of_inclusion(index)

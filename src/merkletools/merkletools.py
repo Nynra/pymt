@@ -85,7 +85,7 @@ class MerkleTools(object):
             v = bytearray.fromhex(v)
             self.leaves.append(v)
 
-    def get_leaf(self, index, raw=False):
+    def get_leaf(self, index):
         """
         Get the leaf value at the given index.
 
@@ -102,10 +102,7 @@ class MerkleTools(object):
             The leaf value at the given index.
 
         """
-        if raw:
-            return bytes(self.leaves[index])
-        else:
-            return self._to_hex(self.leaves[index])
+        return self._to_hex(self.leaves[index])
 
     def get_leaf_count(self):
         """
