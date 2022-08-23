@@ -4,15 +4,13 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "merkletools"
-version = "0.0.1"
+version = "0.0.2"
 description = "A module for Merkle Tries and proofs."
 authors = [{name = "Nynra", email="nynradev@pm.me"}]
 readme = "README.md"
 license = {text = "BSD 3-Clause License"}
 classifiers = [
     "Programming Language :: Python :: 3",
-    "License :: OSI Approved :: MIT License",
-    "Operating System :: OS Independent",
     "Topic :: Security :: Cryptography",
 ]
 dependencies = [
