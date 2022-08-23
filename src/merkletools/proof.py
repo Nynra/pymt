@@ -62,7 +62,6 @@ class Proof():
                 ['root', self.trie_root], 
                 ['proof', self.proof]]
 
-
     def to_json(self):
         """
         Convert the proof to a json object.
