@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "merkletools"
-version = "0.0.2"
+version = "0.0.3"
 description = "A module for Merkle Tries and proofs."
 authors = [{name = "Nynra", email="nynradev@pm.me"}]
 readme = "README.md"

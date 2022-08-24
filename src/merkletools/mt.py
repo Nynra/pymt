@@ -35,8 +35,9 @@ class MerkleTree(MerkleTools):
         
         Parameters
         ----------
-        value : bytes
-            The leaf key to add to the tree.
+        value : bytes, str or dict
+            The leaf key to add to the tree. If a dict is passed, make sure the keys and 
+            values are also bytes, str or dict.
         do_hash : bool
             If True, the key will be hashed before being added.
             If False, the key will be added as is.
@@ -46,13 +47,32 @@ class MerkleTree(MerkleTools):
         None
 
         """
-        if not isinstance(value, bytes):
+        if not (isinstance(value, bytes), isinstance(value, str), isinstance(value, dict)):
             raise TypeError('`value` must be a bytes not {}'.format(type(value)))
         self.add_leaf(value, do_hash=self._secure)
 
+    def put_list(self, values):
+        """
+        Add a list of leaves to the Merkle tree.
+        
+        Parameters
+        ----------
+        values : list
+            The list of leaves to add to the tree. Each item in the list must be a bytes, str or dict.
+        
+        Returns
+        -------
+        None
+        """
+        if not isinstance(values, list):
+            raise TypeError('`values` must be a list not {}'.format(type(values)))
+
+        for value in values:
+            self.put(value)
+
     def convert_value(self, value):
         """
-        Convert the value to what it will be saved in the tree.
+        Convert the value to what it will be saved as in the tree.
         
         Parameters
         ----------
