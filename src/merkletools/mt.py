@@ -48,8 +48,38 @@ class MerkleTree(MerkleTools):
 
         """
         if not (isinstance(value, bytes), isinstance(value, str), isinstance(value, dict)):
-            raise TypeError('`value` must be a bytes not {}'.format(type(value)))
+            raise TypeError('`value` must be a bytes, str, or dict not {}'.format(type(value)))
+        # If the type is dict put all the key value pairs in one string
+        if isinstance(value, dict):
+            value = self._convert_dict_to_string(value)
         self.add_leaf(value, do_hash=self._secure)
+
+    def _convert_dict_to_string(self, dict_value):
+        """
+        Convert the dict to a string.
+        
+        Parameters
+        ----------
+        dict_value : dict
+            The dict to convert.
+        
+        Returns
+        -------
+        str
+            The converted dict.
+        """
+        if not isinstance(dict_value, dict):
+            raise TypeError('`dict_value` must be a dict not {}'.format(type(dict_value)))
+        new_value = ''
+        for key, val in dict_value.items():
+            # Check if the key and val are allowed datatypes
+            if not (isinstance(key, bytes), isinstance(key, str), isinstance(val, bytes), isinstance(val, str), isinstance(val, dict)):
+                raise TypeError('`key` and `val` must be a bytes, str, or dict not {}'.format(type(key)))
+            if isinstance(val, dict):
+                new_value += self._convert_dict_to_string(val)
+            else: 
+                new_value += str(key) + str(val)
+        return new_value
 
     def put_list(self, values):
         """
@@ -66,7 +96,6 @@ class MerkleTree(MerkleTools):
         """
         if not isinstance(values, list):
             raise TypeError('`values` must be a list not {}'.format(type(values)))
-
         for value in values:
             self.put(value)
 
@@ -76,7 +105,7 @@ class MerkleTree(MerkleTools):
         
         Parameters
         ----------
-        value : bytes
+        value : bytes, str, or dict
             The value to convert.
         
         Returns
@@ -84,9 +113,8 @@ class MerkleTree(MerkleTools):
         bytes
             The converted bytes.
         """
-        if not isinstance(value, bytes):
-            raise TypeError('`value` must be a bytes not {}'.format(type(value)))
-
+        if not (isinstance(value, bytes) or isinstance(value, str) or isinstance(value, dict)):
+            raise TypeError('`value` must be a bytes, str, or dict not {}'.format(type(value)))
         return self.hash_function(value).hexdigest().encode() if self._secure else value
 
     def get(self, index):
