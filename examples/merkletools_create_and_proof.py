@@ -22,7 +22,7 @@ print(trie.is_ready)
 key = trie.get_leaf(2)
 merkle_hash = trie.get_merkle_root()  # Get the root hash
 proof = trie.get_proof_of_inclusion(2)  # Get the proof of inclusion for index 2 (here)
-valid = trie.validate_proof_of_inclusion(proof, key, merkle_hash)  # Validate the proof
+valid = trie.verify_proof_of_inclusion(proof, key, merkle_hash)  # Validate the proof
 
 # Print the result
 print('Proof is valid: {}'.format(valid))
