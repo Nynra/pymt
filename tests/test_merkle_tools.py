@@ -48,7 +48,8 @@ class TestMerkleTools(unittest.TestCase):
         # tree with no leaves
         mt = MerkleTools()
         mt.make_tree()
-        self.assertEqual(mt.get_merkle_root(), None)
+        with self.assertRaises(ValueError):
+            mt.get_merkle_root()
 
         # tree with hex add_leaf
         mt.add_leaf([bLeft, bRight])
@@ -126,8 +127,8 @@ class Test_proof(unittest.TestCase):
     def test_proof_no_leaves(self):
         mt = MerkleTools()
         mt.make_tree()
-        proof = mt.get_proof_of_inclusion(0)
-        self.assertEqual(type(proof), type(None))
+        with self.assertRaises(ValueError):
+            _ = mt.get_proof_of_inclusion(0)
 
     def test_bad_proof(self):
         bLeft = 'a292780cc748697cb499fdcc8cb89d835609f11e502281dfe3f6690b1cc23dcb'

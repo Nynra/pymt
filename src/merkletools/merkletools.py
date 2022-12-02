@@ -1,6 +1,8 @@
 import hashlib
 import binascii
 import sys
+from typeguard import typechecked
+from typing import List, Union, Tuple
 
 
 if sys.version_info < (3, 6):
@@ -12,7 +14,9 @@ if sys.version_info < (3, 6):
 
 
 class MerkleTools(object):
-    def __init__(self, hash_type="sha256"):
+
+    @typechecked
+    def __init__(self, hash_type : str="sha256") -> ...:
         """
         Initialize the MerkleTools object
         
@@ -20,7 +24,6 @@ class MerkleTools(object):
         ----------
         hash_type : str
             The hash function to use. Can be "sha256" or "sha3"
-
         """
         hash_type = hash_type.lower()
         if hash_type in ['sha256', 'md5', 'sha224', 'sha384', 'sha512',
@@ -31,7 +34,31 @@ class MerkleTools(object):
 
         self.reset_tree()
 
-    def _to_hex(self, x):
+    # SPECIAL METHODS
+    def __len__(self) -> int:
+        return self.get_leaf_count()
+
+    def __str__(self) -> str:
+        """Get the string representation of the Merkle tree."""
+        if self.get_tree_ready_state():
+            return str(self.levels)
+        else:
+            return 'Tree not ready'
+
+    def __hash__(self) -> int:
+        """Get the hash of the Merkle tree."""
+        return int(self.get_merkle_root(), 16)
+
+    def __eq__(self, other : 'MerkleTools') -> bool:
+        """Check if two Merkle trees are equal."""
+        return self.__hash__() == other.__hash__()
+
+    def __repr__(self) -> str:
+        """Get the string representation of the Merkle tree."""
+        return self.__str__()
+
+    # LEAF METHODS
+    def _to_hex(self, x : bytes) -> ...:
         """
         Convert a byte array to hex string
         
@@ -44,20 +71,20 @@ class MerkleTools(object):
         -------
         str
             The hex string representation of the byte array
-        
         """
         try:  # python3
             return x.hex()
         except:  # python2
             return binascii.hexlify(x)
 
-    def reset_tree(self):
+    def reset_tree(self) -> ...:
         """Reset the MerkleTools object to its initial state."""
         self.leaves = list()
         self.levels = None
         self.is_ready = False
 
-    def add_leaf(self, values, do_hash=False):
+    def add_leaf(self, values : Union[list, str, bytes], 
+            do_hash :bool=False) -> ...:
         """
         Add a leaf to the Merkle tree.
 
@@ -85,50 +112,19 @@ class MerkleTools(object):
             v = bytearray.fromhex(v)
             self.leaves.append(v)
 
-    def get_leaf(self, index):
-        """
-        Get the leaf value at the given index.
-
-        Parameters
-        ----------
-        index : int
-            The index of the leaf to get.
-        raw : bool
-            If True, the leaf value will be returned as a byte array.
-
-        Returns
-        -------
-        str
-            The leaf value at the given index.
-
-        """
+    def get_leaf(self, index : int) -> str:
+        """Get the leaf value at the given index."""
         return self._to_hex(self.leaves[index])
 
-    def get_leaf_count(self):
-        """
-        Get the number of leaves in the tree.
-
-        Returns
-        -------
-        int
-            The number of leaves in the tree.
-        
-        """
+    def get_leaf_count(self) -> int:
+        """Get the number of leaves in the tree."""
         return len(self.leaves)
 
-    def get_tree_ready_state(self):
-        """
-        Get the state of the tree.
-
-        Returns
-        -------
-        bool
-            True if the tree is ready, False otherwise.
-        
-        """
+    def get_tree_ready_state(self) -> bool:
+        """Check if the tree is ready to generate proofs."""
         return self.is_ready
 
-    def _calculate_next_level(self):
+    def _calculate_next_level(self) -> ...:
         """Calculate the next level of the tree."""
         solo_leave = None
         N = len(self.levels[0])  # number of leaves on the level
@@ -143,7 +139,7 @@ class MerkleTools(object):
             new_level.append(solo_leave)
         self.levels = [new_level, ] + self.levels  # prepend new level
 
-    def make_tree(self):
+    def make_tree(self) -> ...:
         """Make the Merkle tree."""
         self.is_ready = False
         if self.get_leaf_count() > 0:
@@ -152,25 +148,26 @@ class MerkleTools(object):
                 self._calculate_next_level()
         self.is_ready = True
 
-    def get_merkle_root(self):
+    @typechecked
+    def get_merkle_root(self) -> str:
         """
         Get the Merkle root of the tree.
+
+        Raises
+        ------
+        ValueError
+            If the tree is not ready.
 
         Returns
         -------
         str
-            The Merkle root of the tree.
-        
         """
-        if self.is_ready:
-            if self.levels is not None:
-                return self._to_hex(self.levels[0][0])
-            else:
-                return None
-        else:
-            return None
+        if not (self.is_ready and self.levels is not None):
+            raise ValueError('Tree is not ready. Call `make_tree` first.')
+        return self._to_hex(self.levels[0][0])
+        
 
-    def get_proof_of_inclusion(self, index):
+    def get_proof_of_inclusion(self, index : int) -> list:
         """
         Get the proof for the leaf at the given index.
 
@@ -179,16 +176,20 @@ class MerkleTools(object):
         index : int
             The index of the leaf to get the proof for.
 
+        Raises
+        ------
+        ValueError
+            If the tree is not ready or the index is out of range.
+
         Returns
         -------
         list
             The proof for the leaf at the given index.
-
         """
-        if self.levels is None:
-            return None
-        elif not self.is_ready or index > len(self.leaves)-1 or index < 0:
-            return None
+        if self.levels is None or not self.is_ready:
+            raise ValueError('Tree is not ready. Call `make_tree()` first.')
+        elif index > len(self.leaves)-1 or index < 0:
+            raise ValueError('`index` {} is out of range'.format(index))
         else:
             proof = []
             for x in range(len(self.levels) - 1, 0, -1):
@@ -204,7 +205,8 @@ class MerkleTools(object):
                 index = int(index / 2.)
             return proof
 
-    def verify_proof_of_inclusion(self, proof, target_hash, merkle_root):
+    def verify_proof_of_inclusion(self, proof : list, target_hash : str, 
+            merkle_root : str) -> bool:
         """
         Validate the proof for the leaf at the given index.
         
@@ -221,7 +223,6 @@ class MerkleTools(object):
         -------
         bool
             True if the proof is valid, False otherwise.
-        
         """
         merkle_root = bytearray.fromhex(merkle_root)
         target_hash = bytearray.fromhex(target_hash)
