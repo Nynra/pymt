@@ -3,7 +3,7 @@ requires = ["setuptools", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "merkletools"
+name = "pymt"
 version = "0.0.4"
 description = "A module for Merkle Tries and proofs."
 authors = [{name = "Nynra", email="nynradev@pm.me"}]
