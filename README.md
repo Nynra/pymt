@@ -1,5 +1,5 @@
 ## Merkletools
-Most of the code in this repository was copies and/or edited from [pymerkletools](https://github.com/Tierion/pymerkletools).
+Most of the code in this repository was copies and/or edited from [pymerkletools](https://github.com/Tierion/pymerkletools) under MIT licence.
 This repository contains code needed to create merkle tries and merkle proofs.
 
 IMPORTANT: This code is by no means secure, I am not a software developer or security specialist. If you see any security issues or want to improve the code, please create an issue or a pull-request if you know a good fix. If you have ideas for new functions you can also create a new issue. I do not garantie that I will solve the issues because this is a hobby project and I don't always have the time, but all help is welcome.

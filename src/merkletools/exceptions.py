@@ -12,21 +12,16 @@ class KeyNotFoundError(Exception):
         super().__init__(message)
 
 
-
 # For distinction between proof of inclusion and exclusion
 class PoeError(Exception):
-    """
-    Exception raised when POE cannot be generated.
-    """
+    """Exception raised when POE cannot be generated."""
 
     def __init__(self, message) -> ...:
         super().__init__(message)
 
 
 class PoiError(Exception):
-    """
-    Exception raised when POI cannot generated.
-    """
+    """Exception raised when POI cannot generated."""
 
     def __init__(self, message) -> ...:
         super().__init__(message)
