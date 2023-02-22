@@ -1,2 +1,9 @@
 pysha3>=1.0b1
+cytoolz
+eth-hash
+eth-typing
+eth-utils
+pycryptodome
+rlp
+toolz
 typeguard
