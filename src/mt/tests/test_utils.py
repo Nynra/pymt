@@ -18,31 +18,24 @@ class TestProof(unittest.TestCase):
     def setUp(self):
         self.proof = Proof(b"target_key", b"root_hash", [b"proof", b"proof2", b"proof3"],
                            type=b'MPT-POE')
+        self.dict_content = {
+            "type": self.proof._type,
+            "timestamp": self.proof._timestamp,
+            "target_key": self.proof._target_key,
+            "root_hash": self.proof._root_hash,
+            "proof": str(self.proof._proof),
+        }
 
     def assertDict(self, dict1, dict2):
         for key in dict1:
             self.assertEqual(dict1[key], dict2[key])
 
     def test_dict(self):
-        expected = {
-            "type": self.proof._type.decode(),
-            "timestamp": self.proof._timestamp,
-            "target_key": self.proof._target_key.decode(),
-            "root_hash": self.proof._root_hash.decode(),
-            "proof": str(self.proof._proof),
-        }
-
-        self.assertDict(expected, self.proof.__dict__())
+        self.assertDict(self.dict_content, self.proof.__dict__())
 
     def test_hash(self):
-        dict_content = {
-            "type": self.proof._type.decode(),
-            "timestamp": self.proof._timestamp,
-            "target_key": self.proof._target_key.decode(),
-            "root_hash": self.proof._root_hash.decode(),
-            "proof": str(self.proof._proof),
-        }
-        expected = int(keccak_hash(str(dict_content).encode(), hexdigest=True), 16)
+
+        expected = int(keccak_hash(str(self.dict_content).encode(), hexdigest=True), 16)
         self.assertEqual(expected, self.proof.__hash__())
 
     def test_eq(self):
@@ -57,17 +50,12 @@ class TestProof(unittest.TestCase):
         self.assertFalse(proof1 == proof3)
 
     def test_encode_decode_json(self):
-        dict_content = {
-            "type": self.proof._type.decode(),
-            "timestamp": self.proof._timestamp,
-            "target_key": self.proof._target_key.decode(),
-            "root_hash": self.proof._root_hash.decode(),
-            "proof": str(self.proof._proof),
-        }
-        expected = json.dumps(dict_content)
+        expected = json.dumps(self.dict_content)
         self.assertEqual(expected, self.proof.encode_json())
-        
 
+        proof = Proof.decode_json(expected)
+        self.assertEqual(self.proof, proof)
+        
     def test_encode_decode_rlp(self):
         expected = rlp.encode([
             self.proof._type,
@@ -77,6 +65,9 @@ class TestProof(unittest.TestCase):
             self.proof._proof,
         ])
         self.assertEqual(expected, self.proof.encode_rlp())
+
+        proof = Proof.decode_rlp(expected)
+        self.assertEqual(self.proof, proof)
 
 
 class TestNibblePath(unittest.TestCase):

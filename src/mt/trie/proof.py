@@ -50,10 +50,10 @@ class Proof:
     def __dict__(self) -> dict:
         """Return the proof as a dictionary."""
         return {
-            "type": self._type.decode(),
+            "type": self._type,
             "timestamp": self._timestamp,
-            "target_key": self._target_key.decode(),
-            "root_hash": self._root_hash.decode(),
+            "target_key": self._target_key,
+            "root_hash": self.trie_root,
             "proof": str(self._proof),
         }
 
@@ -73,6 +73,20 @@ class Proof:
             return False
 
         return self.__hash__() == other.__hash__()
+    
+    def __iter__(self) -> "Proof":
+        """Return the proof as an iterator."""
+        self._data = list(self.items())
+        self._offset = 0
+        return self
+    
+    def __next__(self) -> tuple:
+        """Return the next item of the proof."""
+        if self._offset >= len(self._data):
+            raise StopIteration
+        else:
+            self._offset += 1
+            return self._data[self._offset - 1]
 
     # ATTRIBUTES
     @property
@@ -112,6 +126,9 @@ class Proof:
         For this library the type can be either 'MMPT-POI' or 'MMPT-POE'.
         """
         return self._type
+    
+    def items(self):
+        return self.__dict__().items()
 
     # CODEC
     def encode_json(self) -> dict:

@@ -22,8 +22,7 @@ trie.update(b'ethereum', b'penguin')
 proof = trie.get_proof_of_inclusion(b'dog')
 
 print('Proof dict:')
-for i, j in proof.items():
-    print(i, ':', j)
+print(dict(proof))
 
 print('\nProof valid: {}'.format(trie.verify_proof_of_inclusion(proof)))
 

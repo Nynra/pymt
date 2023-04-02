@@ -58,9 +58,9 @@ class TestDataReference(unittest.TestCase):
 class TestFullEmptNonSecure(unittest.TestCase, ProofOfInclusion, ProofOfExclusion):
     """Test the full DBMMPT."""
 
-    ROOT_HASH = b"some root hash"
-    ROOT_HASH_AFTER_UPDATES = b"some other root hash"
-    ROOT_HASH_AFTER_DELETES = b"some other root hash"
+    ROOT_HASH = "7598c123c0f082dbd703076fa18fd3d714ec6339fd134f1af62a6fb34dd5cba4"
+    ROOT_HASH_AFTER_UPDATES = "802e7fce3ed1b6e6017c354221efdd69326ada996d2070459e3867831a9af19d"
+    ROOT_HASH_AFTER_DELETES = "7598c123c0f082dbd703076fa18fd3d714ec6339fd134f1af62a6fb34dd5cba4"
 
     def setUp(self):
         self.storage = {}
@@ -187,7 +187,7 @@ class TestFullEmptNonSecure(unittest.TestCase, ProofOfInclusion, ProofOfExclusio
 
         root_hash = self.trie.root_hash()
 
-        self.assertEqual(root_hash, self.ROOT_HASH)
+        self.assertEqual(root_hash.hex(), self.ROOT_HASH)
 
     def test_root_hash_after_updates(self):
         """Test getting the root hash of a trie after updates."""
@@ -205,7 +205,7 @@ class TestFullEmptNonSecure(unittest.TestCase, ProofOfInclusion, ProofOfExclusio
 
         root_hash = self.trie.root_hash()
 
-        self.assertEqual(root_hash, self.ROOT_HASH_AFTER_UPDATES)
+        self.assertEqual(root_hash.hex(), self.ROOT_HASH_AFTER_UPDATES)
 
     def test_root_hash_after_deletes(self):
         """Test getting the root hash of a trie after deletes."""
@@ -226,7 +226,7 @@ class TestFullEmptNonSecure(unittest.TestCase, ProofOfInclusion, ProofOfExclusio
             self.trie.delete(k)
 
         root_hash = self.trie.root_hash()
-        self.assertEqual(root_hash, self.ROOT_HASH_AFTER_DELETES)
+        self.assertEqual(root_hash.hex(), self.ROOT_HASH_AFTER_DELETES)
 
     # def test_trie_from_old_root(self):
     #     """Test getting the root hash of a trie after deletes."""
@@ -288,9 +288,9 @@ class TestFullEmptNonSecure(unittest.TestCase, ProofOfInclusion, ProofOfExclusio
 
 
 class TestFullEmptSecure(TestFullEmptNonSecure):
-    ROOT_HASH = b"have to set a hash here"
-    ROOT_HASH_AFTER_UPDATES = b"have to set a hash here"
-    ROOT_HASH_AFTER_DELETES = b"have to set a hash here"
+    ROOT_HASH = "14b986c52c285e80583ffbd8683e2218211c99f089b2534c7dc474925af13276"
+    ROOT_HASH_AFTER_UPDATES = "554c18b65fec9cc090469cefaefd3dbe8a8123dd9ae178c2f7d96432dbf60b8c"
+    ROOT_HASH_AFTER_DELETES = "14b986c52c285e80583ffbd8683e2218211c99f089b2534c7dc474925af13276"
 
     def setUp(self):
         """Set up the test."""
@@ -303,9 +303,9 @@ class TestFullEmptSecure(TestFullEmptNonSecure):
 
 class TestSparseEmptNonSecure(unittest.TestCase, ProofOfInclusion, ProofOfExclusion):
 
-    ROOT_HASH = b"have to set a hash here"
-    ROOT_HASH_AFTER_UPDATES = b"have to set a hash here"
-    ROOT_HASH_AFTER_DELETES = b"have to set a hash here"
+    ROOT_HASH = "175d31ebdcc71dec9a0f869cf7e00585f861413e910170514eeb76c080a3801d"
+    ROOT_HASH_AFTER_UPDATES = "2e03ca6531c64b42ec14b616a8204f37dcbb256715ae344a4d045178e1f8a72b"
+    ROOT_HASH_AFTER_DELETES = "b83e35c275f77b8eca2f416b37df7533f48f7194fea592a0edcfbe5f62c2aee7"
 
     @classmethod
     def setUpClass(cls):
@@ -438,7 +438,7 @@ class TestSparseEmptNonSecure(unittest.TestCase, ProofOfInclusion, ProofOfExclus
         for k, v in data:
             self.trie.update(k, v)
 
-        self.assertEqual(self.trie.root_hash, self.ROOT_HASH)
+        self.assertEqual(self.trie.root_hash().hex(), self.ROOT_HASH)
 
     def test_root_hash_after_update(self):
         data = (
@@ -453,7 +453,7 @@ class TestSparseEmptNonSecure(unittest.TestCase, ProofOfInclusion, ProofOfExclus
 
         self.trie.update(b"horse", b"mare")
 
-        self.assertEqual(self.trie.root_hash, self.ROOT_HASH_AFTER_UPDATES)
+        self.assertEqual(self.trie.root_hash().hex(), self.ROOT_HASH_AFTER_UPDATES)
 
     def test_root_hash_after_delete(self):
         data = (
@@ -469,7 +469,7 @@ class TestSparseEmptNonSecure(unittest.TestCase, ProofOfInclusion, ProofOfExclus
         self.trie.delete(b"horse")
         self.trie.delete(b"doge")
 
-        self.assertEqual(self.trie.root_hash, self.ROOT_HASH_AFTER_DELETES)
+        self.assertEqual(self.trie.root_hash().hex(), self.ROOT_HASH_AFTER_DELETES)
 
     def test_contains(self):
         data = (
@@ -495,9 +495,9 @@ class TestSparseEmptNonSecure(unittest.TestCase, ProofOfInclusion, ProofOfExclus
 
 
 class TestSparseEmptSecure(TestSparseEmptNonSecure):
-    ROOT_HASH = b'\x9f\x1f\x9f\x1f\x9f\x1f\x9f\x1f\x9f\x1f\x9f\x1f\x9f\x1f\x9f\x1f\x9f\x1f\x9f\x1f\x9f\x1f\x9f\x1f\x9f\x1f\x9f\x1f\x9f\x1f\x9f\x1f'
-    ROOT_HASH_AFTER_UPDATE = b'\x9f\x1f\x9f\x1f\x9f\x1f\x9f\x1f\x9f\x1f\x9f\x1f\x9f\x1f\x9f\x1f\x9f\x1f\x9f\x1f\x9f\x1f\x9f\x1f\x9f\x1f\x9f\x1f\x9f\x1f\x9f\x1f'
-    ROOT_HASH_AFTER_DELETE = b'\x9f\x1f\x9f\x1f\x9f\x1f\x9f\x1f\x9f\x1f\x9f\x1f\x9f\x1f\x9f\x1f\x9f\x1f\x9f\x1f\x9f\x1f\x9f\x1f\x9f\x1f\x9f\x1f\x9f\x1f\x9f\x1f'
+    ROOT_HASH = "14b986c52c285e80583ffbd8683e2218211c99f089b2534c7dc474925af13276"
+    ROOT_HASH_AFTER_UPDATE = "ca42a25c5475fef5c6653df13d88e509e256f1ae66eb801a860807c7d0825c01"
+    ROOT_HASH_AFTER_DELETE = "b83e35c275f77b8eca2f416b37df7533f48f7194fea592a0edcfbe5f62c2aee7"
 
     def setUp(self):
         self.trie = SparseEMPT({}, secure=True)

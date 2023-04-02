@@ -19,7 +19,5 @@ trie.update(b'dogecoin', b'crypto')
 
 proof = trie.get_proof_of_exclusion(b'wolf')
 
-print('Proof dict:')
-for i, j in proof.items():
-   print(i, ':', j)
+print('Proof dict: {}'.format(proof.__dict__()))
 print('\nProof valid: {}'.format(trie.verify_proof_of_exclusion(proof)))
