@@ -231,7 +231,7 @@ class MerkleTools(object):
         if len(proof) == 0:
             return target_hash == merkle_root
         else:
-            proof_hash = target_hash
+            proof_hash = target_hash.encode()
             for p in proof:
                 try:
                     # the sibling is a left node

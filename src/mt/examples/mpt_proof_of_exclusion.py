@@ -21,5 +21,5 @@ print(trie.contains(b"wolf"))
 # Get the proof of inclusion for the key.
 proof = trie.get_proof_of_exclusion(b"101")
 print("Proof: {}".format(proof))
-print("Proof valid: {}".format(trie.verify_proof_of_exclusion(b"101", proof)))
+print("Proof valid: {}".format(trie.verify_proof_of_exclusion(proof)))
 print("Tree root: {}".format(trie.root()))
