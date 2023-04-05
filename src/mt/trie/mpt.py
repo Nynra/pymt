@@ -20,7 +20,6 @@ from .exceptions import (
     InvalidNodeError,
 )
 from typing import Tuple, List, Union, Optional
-# from typeguard import typechecked
 import rlp
 
 
@@ -52,8 +51,9 @@ class MPT:
         This method removes a value associtated with provided key.
     """
 
-    # @typechecked
-    def __init__(self, storage: dict, root: Union[bytes, None] = None, secure: bool = False) -> ...:
+    def __init__(
+        self, storage: dict, root: Union[bytes, None] = None, secure: bool = False
+    ) -> ...:
         """
         Create a new instance of MPT.
 
@@ -305,7 +305,6 @@ class MPT:
             proof_type=b"MPT-POI",
         )
 
-    # @typechecked
     def verify_proof_of_inclusion(self, proof: Proof) -> bool:
         """
         This method verifies a proof object containing a proof of inclusion.
@@ -354,7 +353,6 @@ class MPT:
             return True
         else:
             return False
-
 
     def get_proof_of_exclusion(self, encoded_key: bytes) -> Proof:
         """
@@ -415,7 +413,6 @@ class MPT:
             proof_type=b"MPT-POE",
         )
 
-    # @typechecked
     def verify_proof_of_exclusion(self, proof: Proof) -> bool:
         """
         This method verifies a proof of exclusion for a key.

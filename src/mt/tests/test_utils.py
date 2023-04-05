@@ -14,10 +14,13 @@ import json
 
 
 class TestProof(unittest.TestCase):
-
     def setUp(self):
-        self.proof = Proof(b"target_key", b"root_hash", (b"proof", b"proof2", b"proof3"),
-                           proof_type=b'MT-POI')
+        self.proof = Proof(
+            b"target_key",
+            b"root_hash",
+            (b"proof", b"proof2", b"proof3"),
+            proof_type=b"MT-POI",
+        )
         self.dict_content = {
             "proof_type": self.proof._type,
             "timestamp": self.proof._timestamp,
@@ -43,17 +46,28 @@ class TestProof(unittest.TestCase):
         self.assertDict(self.dict_content, self.proof.__dict__())
 
     def test_hash(self):
-
         expected = int(keccak_hash(str(self.dict_content).encode(), hexdigest=True), 16)
         self.assertEqual(expected, self.proof.__hash__())
 
     def test_eq(self):
-        proof1 = Proof(b"target_key", b"root_hash", (b"proof", b"proof2", b"proof3"),
-                       proof_type=b'MPT-POE')
-        proof2 = Proof(b"target_key", b"root_hash", (b"proof", b"proof2", b"proof3"),
-                       proof_type=b'MPT-POE')
-        proof3 = Proof(b"target_key", b"root_hash", (b"proof", b"proof2", b"proof3"),
-                       proof_type=b'MPT-POI')
+        proof1 = Proof(
+            b"target_key",
+            b"root_hash",
+            (b"proof", b"proof2", b"proof3"),
+            proof_type=b"MPT-POE",
+        )
+        proof2 = Proof(
+            b"target_key",
+            b"root_hash",
+            (b"proof", b"proof2", b"proof3"),
+            proof_type=b"MPT-POE",
+        )
+        proof3 = Proof(
+            b"target_key",
+            b"root_hash",
+            (b"proof", b"proof2", b"proof3"),
+            proof_type=b"MPT-POI",
+        )
         proof2._timestamp = proof1._timestamp
         self.assertTrue(proof1 == proof2)
         self.assertFalse(proof1 == proof3)
@@ -65,15 +79,17 @@ class TestProof(unittest.TestCase):
 
         proof = Proof.decode_json(expected)
         self.assertEqual(self.proof, proof)
-        
+
     def test_encode_decode_rlp(self):
-        expected = rlp.encode([
-            self.proof._type,
-            self.proof._timestamp,
-            self.proof._target_key,
-            self.proof._root_hash,
-            self.proof._proof,
-        ])
+        expected = rlp.encode(
+            [
+                self.proof._type,
+                self.proof._timestamp,
+                self.proof._target_key,
+                self.proof._root_hash,
+                self.proof._proof,
+            ]
+        )
         self.assertEqual(expected, self.proof.encode_rlp())
 
         proof = Proof.decode_rlp(expected)
@@ -98,12 +114,12 @@ class TestNibblePath(unittest.TestCase):
 
     def test_encode(self):
         nibbles = NibblePath([0x12, 0x34])
-        self.assertEqual(nibbles.encode(False), b'\x00\x12\x34')
-        self.assertEqual(nibbles.encode(True), b'\x20\x12\x34')
+        self.assertEqual(nibbles.encode(False), b"\x00\x12\x34")
+        self.assertEqual(nibbles.encode(True), b"\x20\x12\x34")
 
         nibbles = NibblePath([0x12, 0x34], offset=1)
-        self.assertEqual(nibbles.encode(False), b'\x12\x34')
-        self.assertEqual(nibbles.encode(True), b'\x32\x34')
+        self.assertEqual(nibbles.encode(False), b"\x12\x34")
+        self.assertEqual(nibbles.encode(True), b"\x32\x34")
 
     def test_common_prefix(self):
         nibbles_a = NibblePath([0x12, 0x34])
@@ -136,12 +152,12 @@ class TestNibblePath(unittest.TestCase):
         nibbles_b = NibblePath([0x56, 0x78], offset=3)
         common = nibbles_a.combine(nibbles_b)
         self.assertEqual(common, NibblePath([0x23, 0x48]))
-        
+
 
 class TestNode(unittest.TestCase):
     """This class tests the general CODEC functions of the different node types."""
 
-    def assertRoundtrip(self, raw_node : Node, expected_type : type) -> ...:
+    def assertRoundtrip(self, raw_node: Node, expected_type: type) -> ...:
         """Test the general Node.decode function."""
         decoded = Node.decode(raw_node)
         encoded = decoded.encode()
@@ -149,11 +165,11 @@ class TestNode(unittest.TestCase):
         self.assertEqual(type(decoded), expected_type)
         self.assertEqual(raw_node, encoded)
 
-    def assertNodeContent(self, node : Node, raw_node : bytes) -> ...:
+    def assertNodeContent(self, node: Node, raw_node: bytes) -> ...:
         """Test the data and path persistence of a node after encoding and decoding."""
         decoded_node = Node.decode(raw_node)
         self.assertEqual(decoded_node.data, node.data)
-        
+
     def test_leaf(self) -> ...:
         """Test the Leaf node type."""
         # Path 0xABC. 0x3_ at the beginning: 0x20 (for leaf type) + 0x10 (for odd len)
@@ -176,14 +192,18 @@ class TestNode(unittest.TestCase):
         """Test the Extension node type."""
         # Path 0xABC. 0x1_ at the beginning: 0x10 (for extension type) + 0x10 (for odd len)
         nibbles_path = NibblePath(bytearray([0x1A, 0xBC]))
-        child = Node.into_reference(Leaf(NibblePath([0x12, 0x34]), bytearray([0xDE, 0xAD, 0xBE, 0xEF])))
+        child = Node.into_reference(
+            Leaf(NibblePath([0x12, 0x34]), bytearray([0xDE, 0xAD, 0xBE, 0xEF]))
+        )
         extension = Extension(nibbles_path, child)
         raw_node = extension.encode()
         self.assertRoundtrip(raw_node, Extension)
 
         # Path 0xABC. 0x0_ at the beginning: 0x10 (for extension type) + 0x00 (for even len)
         nibbles_path = NibblePath(bytearray([0x0A, 0xBC]))
-        child = Node.into_reference(Leaf(NibblePath([0x12, 0x34]), bytearray([0xDE, 0xAD, 0xBE, 0xEF])))
+        child = Node.into_reference(
+            Leaf(NibblePath([0x12, 0x34]), bytearray([0xDE, 0xAD, 0xBE, 0xEF]))
+        )
         extension = Extension(nibbles_path, child)
         raw_node = extension.encode()
         self.assertRoundtrip(raw_node, Extension)
@@ -225,4 +245,3 @@ class TestNode(unittest.TestCase):
         raw_node = branch.encode()
         self.assertRoundtrip(raw_node, Branch)
         self.assertNodeContent(branch, raw_node)
-

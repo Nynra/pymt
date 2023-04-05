@@ -120,7 +120,7 @@ class EMPT(MutableMapping):
         self,
         trie_storage={},
         data_storage={},
-        root: Union[bytes, None]=None,
+        root: Union[bytes, None] = None,
         secure: bool = False,
     ) -> ...:
         """

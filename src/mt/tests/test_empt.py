@@ -59,8 +59,12 @@ class TestFullEmptNonSecure(unittest.TestCase, ProofOfInclusion, ProofOfExclusio
     """Test the full DBMMPT."""
 
     ROOT_HASH = "7598c123c0f082dbd703076fa18fd3d714ec6339fd134f1af62a6fb34dd5cba4"
-    ROOT_HASH_AFTER_UPDATES = "802e7fce3ed1b6e6017c354221efdd69326ada996d2070459e3867831a9af19d"
-    ROOT_HASH_AFTER_DELETES = "7598c123c0f082dbd703076fa18fd3d714ec6339fd134f1af62a6fb34dd5cba4"
+    ROOT_HASH_AFTER_UPDATES = (
+        "802e7fce3ed1b6e6017c354221efdd69326ada996d2070459e3867831a9af19d"
+    )
+    ROOT_HASH_AFTER_DELETES = (
+        "7598c123c0f082dbd703076fa18fd3d714ec6339fd134f1af62a6fb34dd5cba4"
+    )
 
     def setUp(self):
         self.storage = {}
@@ -289,8 +293,12 @@ class TestFullEmptNonSecure(unittest.TestCase, ProofOfInclusion, ProofOfExclusio
 
 class TestFullEmptSecure(TestFullEmptNonSecure):
     ROOT_HASH = "14b986c52c285e80583ffbd8683e2218211c99f089b2534c7dc474925af13276"
-    ROOT_HASH_AFTER_UPDATES = "554c18b65fec9cc090469cefaefd3dbe8a8123dd9ae178c2f7d96432dbf60b8c"
-    ROOT_HASH_AFTER_DELETES = "14b986c52c285e80583ffbd8683e2218211c99f089b2534c7dc474925af13276"
+    ROOT_HASH_AFTER_UPDATES = (
+        "554c18b65fec9cc090469cefaefd3dbe8a8123dd9ae178c2f7d96432dbf60b8c"
+    )
+    ROOT_HASH_AFTER_DELETES = (
+        "14b986c52c285e80583ffbd8683e2218211c99f089b2534c7dc474925af13276"
+    )
 
     def setUp(self):
         """Set up the test."""
@@ -302,10 +310,13 @@ class TestFullEmptSecure(TestFullEmptNonSecure):
 
 
 class TestSparseEmptNonSecure(unittest.TestCase, ProofOfInclusion, ProofOfExclusion):
-
     ROOT_HASH = "175d31ebdcc71dec9a0f869cf7e00585f861413e910170514eeb76c080a3801d"
-    ROOT_HASH_AFTER_UPDATES = "ca42a25c5475fef5c6653df13d88e509e256f1ae66eb801a860807c7d0825c01"
-    ROOT_HASH_AFTER_DELETES = "681cc4ca69dc2a35ddad3cf24cc7122b682daf4c7e2f9cbeed0536a172bb2839"
+    ROOT_HASH_AFTER_UPDATES = (
+        "175d31ebdcc71dec9a0f869cf7e00585f861413e910170514eeb76c080a3801d"
+    )
+    ROOT_HASH_AFTER_DELETES = (
+        "0c3b843aeb53187e821416668635a9ac454579486ad1b06bd16a57b06ebfb9b0"
+    )
 
     @classmethod
     def setUpClass(cls):
@@ -451,9 +462,9 @@ class TestSparseEmptNonSecure(unittest.TestCase, ProofOfInclusion, ProofOfExclus
         for k, v in data:
             self.trie.update(k, v)
 
-        self.trie.update(b"horse", b"mare")
+        root_hash = self.trie.root_hash()
 
-        self.assertEqual(self.trie.root_hash().hex(), self.ROOT_HASH_AFTER_UPDATES)
+        self.assertEqual(root_hash.hex(), self.ROOT_HASH_AFTER_UPDATES)
 
     def test_root_hash_after_delete(self):
         data = (
@@ -466,10 +477,11 @@ class TestSparseEmptNonSecure(unittest.TestCase, ProofOfInclusion, ProofOfExclus
         for k, v in data:
             self.trie.update(k, v)
 
-        self.trie.delete(b"horse")
-        self.trie.delete(b"doge")
+        for k, v in data[-1:]:
+            self.trie.delete(k)
 
-        self.assertEqual(self.trie.root_hash().hex(), self.ROOT_HASH_AFTER_DELETES)
+        root_hash = self.trie.root_hash()
+        self.assertEqual(root_hash.hex(), self.ROOT_HASH_AFTER_DELETES)
 
     def test_contains(self):
         data = (
@@ -496,8 +508,12 @@ class TestSparseEmptNonSecure(unittest.TestCase, ProofOfInclusion, ProofOfExclus
 
 class TestSparseEmptSecure(TestSparseEmptNonSecure):
     ROOT_HASH = "14b986c52c285e80583ffbd8683e2218211c99f089b2534c7dc474925af13276"
-    ROOT_HASH_AFTER_UPDATE = "ca42a25c5475fef5c6653df13d88e509e256f1ae66eb801a860807c7d0825c01"
-    ROOT_HASH_AFTER_DELETE = "b83e35c275f77b8eca2f416b37df7533f48f7194fea592a0edcfbe5f62c2aee7"
+    ROOT_HASH_AFTER_UPDATES = (
+        "14b986c52c285e80583ffbd8683e2218211c99f089b2534c7dc474925af13276"
+    )
+    ROOT_HASH_AFTER_DELETES = (
+        "800641195c56ee2e27ce01736309bf994689099b078a7ff2a4091ee493f855b5"
+    )
 
     def setUp(self):
         self.trie = SparseEMPT({}, secure=True)

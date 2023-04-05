@@ -3,17 +3,18 @@ from typing import Tuple
 
 class NibblePath:
     """Class to represent the nibble path as a linked list."""
+
     ODD_FLAG = 0x10
     LEAF_FLAG = 0x20
 
-    def __init__(self, data : bytes, offset : int=0):
+    def __init__(self, data: bytes, offset: int = 0):
         """
         Initiates NibblePath with raw bytes and an offset.
 
         Offset is the number of nibbles that are skipped at the beginning of the path.
         If offset is odd, first nibble is skipped. If offset is even, first two nibbles are skipped.
         If offset is 0, no nibbles are skipped, if the offset is -1, the last nibble is skipped, etc.
-        
+
         Parameters
         ----------
         data : bytes
@@ -32,23 +33,25 @@ class NibblePath:
     def __repr__(self) -> str:
         """
         Return a string representation of the path.
-        
+
         Returns the data in hex format and the offset.
         """
-        return "<NibblePath: Data: 0x{}, Offset: {}>".format(self._data.hex(), self._offset)
+        return "<NibblePath: Data: 0x{}, Offset: {}>".format(
+            self._data.hex(), self._offset
+        )
 
     def __str__(self) -> str:
         """
         Return a string representation of the path.
-        
+
         Returns the data in hex format and the raw data.
         """
-        return '<Hex 0x{} | Raw {}>'.format(self._data.hex(), self._data)
+        return "<Hex 0x{} | Raw {}>".format(self._data.hex(), self._data)
 
-    def __eq__(self, other : "NibblePath") -> bool:
-        """ 
+    def __eq__(self, other: "NibblePath") -> bool:
+        """
         Check if two paths are equal.
-        
+
         Parameters
         ----------
         other : NibblePath
@@ -72,7 +75,7 @@ class NibblePath:
     def decode_with_type(data) -> Tuple["NibblePath", bool]:
         """
         Decode the NibblePath and its type from raw bytes.
-        
+
         Parameters
         ----------
         data : bytes
@@ -87,7 +90,7 @@ class NibblePath:
         is_leaf = data[0] & NibblePath.LEAF_FLAG == NibblePath.LEAF_FLAG
 
         if is_odd_len:
-            offset = 1 
+            offset = 1
         else:
             offset = 2
 
@@ -97,28 +100,28 @@ class NibblePath:
     def decode(data) -> "NibblePath":
         """
         Decodes NibblePath without its type from raw bytes.
-        
+
         Parameters
         ----------
         data : bytes
             Raw bytes of the path.
-            
+
         Returns
         -------
         NibblePath
-            Decoded path.   
+            Decoded path.
         """
         return NibblePath.decode_with_type(data)[0]
 
     def starts_with(self, other) -> bool:
         """
         Checks if `other` is prefix of `self`.
-        
+
         Parameters
         ----------
         other : NibblePath
             Prefix to check.
-            
+
         Returns
         -------
         bool
@@ -136,12 +139,12 @@ class NibblePath:
     def at(self, idx) -> int:
         """
         Returns nibble at the certain position.
-        
+
         Parameters
         ----------
         idx : int
             Position of the nibble.
-            
+
         Returns
         -------
         int
@@ -158,15 +161,15 @@ class NibblePath:
 
         return nibble
 
-    def consume(self, amount : int) -> "NibblePath":
+    def consume(self, amount: int) -> "NibblePath":
         """
         Cuts off nibbles at the beginning of the path.
-        
+
         Parameters
         ----------
         amount : int
             Number of nibbles to cut off.
-            
+
         Returns
         -------
         NibblePath
@@ -175,17 +178,17 @@ class NibblePath:
         self._offset += amount
         return self
 
-    def _create_new(path : "NibblePath", length : int) -> "NibblePath":
+    def _create_new(path: "NibblePath", length: int) -> "NibblePath":
         """
         Creates a new NibblePath from a given object with a certain length.
-        
+
         Parameters
         ----------
         path : object
             Object to create a new NibblePath from.
         length : int
             Length of the new NibblePath.
-            
+
         Returns
         -------
         NibblePath
@@ -208,15 +211,15 @@ class NibblePath:
 
         return NibblePath(data, offset)
 
-    def common_prefix(self, other : "NibblePath") -> "NibblePath":
+    def common_prefix(self, other: "NibblePath") -> "NibblePath":
         """
         Returns common part at the beginning of both paths.
-        
+
         Parameters
         ----------
         other : NibblePath
             Other path to compare with.
-        
+
         Returns
         -------
         NibblePath
@@ -231,7 +234,7 @@ class NibblePath:
 
         return NibblePath._create_new(self, common_len)
 
-    def encode(self, is_leaf : bool = False) -> bytes:
+    def encode(self, is_leaf: bool = False) -> bytes:
         """
         Encodes NibblePath into bytes.
 
@@ -273,7 +276,7 @@ class NibblePath:
         Class that chains two paths.
         """
 
-        def __init__(self, first : "NibblePath", second : "NibblePath") -> ...:
+        def __init__(self, first: "NibblePath", second: "NibblePath") -> ...:
             """
             Initializes the chained paths.
 
@@ -292,10 +295,10 @@ class NibblePath:
             """Return the length of the chained paths."""
             return len(self.first) + len(self.second)
 
-        def at(self, idx : int) -> int:
+        def at(self, idx: int) -> int:
             """
             Return the nibble at the certain position.
-            
+
             Parameters
             ----------
             idx : int
@@ -312,20 +315,20 @@ class NibblePath:
             else:
                 return self.second.at(idx - len(self.first))
 
-    def combine(self, other : "NibblePath") -> "NibblePath":
+    def combine(self, other: "NibblePath") -> "NibblePath":
         """
         Merges two paths into one.
-        
+
         Parameters
         ----------
         other : NibblePath
             Other path to merge with.
-            
+
         Returns
         -------
         NibblePath
             Merged path.
-        
+
         """
         chained = NibblePath._Chained(self, other)
         return NibblePath._create_new(chained, len(chained))

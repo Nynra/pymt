@@ -1,5 +1,6 @@
 import sys, os
-#Following lines are for assigning parent directory dynamically.
+
+# Following lines are for assigning parent directory dynamically.
 dir_path = os.path.dirname(os.path.realpath(__file__))
 parent_dir_path = os.path.abspath(os.path.join(dir_path, os.pardir))
 sys.path.insert(0, parent_dir_path)
@@ -8,7 +9,7 @@ import unittest
 import json
 
 CURRENT_FOLDER = os.path.dirname(os.path.realpath(__file__))
-BASE_FOLDER = os.path.join(CURRENT_FOLDER, 'test_vectors')
+BASE_FOLDER = os.path.join(CURRENT_FOLDER, "test_vectors")
 
 
 def open_testvector(name):
@@ -19,10 +20,10 @@ def normalize_value(v):
     if not v:
         return v
 
-    if v.startswith('0x'):
+    if v.startswith("0x"):
         return bytes.fromhex(v[2:])
     else:
-        return bytes(v, 'utf-8')
+        return bytes(v, "utf-8")
 
 
 def normalize_kv(k, v):
@@ -34,11 +35,13 @@ class TestVectors(unittest.TestCase):
         with open_testvector(name) as f:
             data = json.load(f)
             for test in data:
-                input_data = data[test]['in']
+                input_data = data[test]["in"]
                 storage = {}
                 trie = MPT(storage, secure=secure)
 
-                data_samples = input_data if isinstance(input_data, list) else input_data.items()
+                data_samples = (
+                    input_data if isinstance(input_data, list) else input_data.items()
+                )
 
                 for k, v in data_samples:
                     k, v = normalize_kv(k, v)
@@ -48,39 +51,41 @@ class TestVectors(unittest.TestCase):
                     else:
                         trie.delete(k)
 
-                expected_root = normalize_value(data[test]['root'])
-                self.assertEqual(trie.root_hash(), expected_root, msg='Test {} failed'.format(test))
+                expected_root = normalize_value(data[test]["root"])
+                self.assertEqual(
+                    trie.root_hash(), expected_root, msg="Test {} failed".format(test)
+                )
 
     def test_hex_encoded_securetrie_test(self):
-        test_vector_name = 'hex_encoded_securetrie_test.json'
+        test_vector_name = "hex_encoded_securetrie_test.json"
         secure = True
 
         self.run_testvector(test_vector_name, secure)
 
     def test_trieanyorder(self):
-        test_vector_name = 'trieanyorder.json'
+        test_vector_name = "trieanyorder.json"
         secure = False
 
         self.run_testvector(test_vector_name, secure)
 
     def test_trieanyorder_secureTrie(self):
-        test_vector_name = 'trieanyorder_secureTrie.json'
+        test_vector_name = "trieanyorder_secureTrie.json"
         secure = True
 
         self.run_testvector(test_vector_name, secure)
 
     def test_trietest(self):
-        test_vector_name = 'trietest.json'
+        test_vector_name = "trietest.json"
         secure = False
 
         self.run_testvector(test_vector_name, secure)
 
     def test_trietest_secureTrie(self):
-        test_vector_name = 'trietest_secureTrie.json'
+        test_vector_name = "trietest_secureTrie.json"
         secure = True
 
         self.run_testvector(test_vector_name, secure)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

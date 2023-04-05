@@ -1,6 +1,5 @@
 from datetime import datetime
 import pickle
-# from typeguard import typechecked
 from typing import List, Union
 from .hash import keccak_hash
 import rlp
@@ -9,6 +8,7 @@ import json
 
 class Proof:
     """Class to hold the information for different kind of proofs."""
+
     accepted_types = [b"MPT-POI", b"MPT-POE", b"MT-POI"]
 
     def __init__(
@@ -34,21 +34,35 @@ class Proof:
         """
         self._timestamp = str(datetime.now()).encode()
         if not isinstance(target_key, bytes):
-            raise TypeError("Invalid target key, type should be bytes, not {}".format(type(target_key)))
+            raise TypeError(
+                "Invalid target key, type should be bytes, not {}".format(
+                    type(target_key)
+                )
+            )
         else:
             self._target_key = target_key
 
         if not isinstance(root_hash, bytes):
-            raise TypeError("Invalid root hash, type should be bytes, not {}".format(type(root_hash)))
+            raise TypeError(
+                "Invalid root hash, type should be bytes, not {}".format(
+                    type(root_hash)
+                )
+            )
         else:
             self._root_hash = root_hash
 
         if not isinstance(proof, tuple):
-            raise TypeError("Invalid proof, type should be tuple, not {}".format(type(proof)))
+            raise TypeError(
+                "Invalid proof, type should be tuple, not {}".format(type(proof))
+            )
         self._proof = proof
 
         if not isinstance(proof_type, bytes):
-            raise TypeError("Invalid proof type, type should be bytes, not {}".format(type(proof_type)))
+            raise TypeError(
+                "Invalid proof type, type should be bytes, not {}".format(
+                    type(proof_type)
+                )
+            )
         if proof_type not in self.accepted_types:
             raise TypeError("Invalid proof type: {}".format(proof_type))
         else:
@@ -81,13 +95,13 @@ class Proof:
             return False
 
         return self.__hash__() == other.__hash__()
-    
+
     def __iter__(self) -> "Proof":
         """Return the proof as an iterator."""
         self._data = list(self.items())
         self._offset = 0
         return self
-    
+
     def __next__(self) -> tuple:
         """Return the next item of the proof."""
         if self._offset >= len(self._data):
@@ -134,7 +148,7 @@ class Proof:
         For this library the type can be either 'POI' or 'POE'.
         """
         return self._type
-    
+
     def items(self):
         return self.__dict__().items()
 
@@ -144,10 +158,12 @@ class Proof:
         content = self.__dict__().copy()
         for key, value in content.items():
             if key.lower() == "proof":
-                if 'MT' in self._type.decode():
+                if "MT" in self._type.decode():
                     content[key] = [i.decode() for i in value]
-                elif 'MPT' in self._type.decode():
-                    raise NotImplementedError("Encoding MPT proofs is not supported yet")
+                elif "MPT" in self._type.decode():
+                    raise NotImplementedError(
+                        "Encoding MPT proofs is not supported yet"
+                    )
             else:
                 content[key] = value.decode()
         return json.dumps(content)
@@ -156,28 +172,32 @@ class Proof:
     def decode_json(json_proof: str) -> "Proof":
         """Create a proof from a json object."""
         if not isinstance(json_proof, str):
-            raise TypeError("Invalid json proof, type should be str, not {}".format(type(json_proof)))
+            raise TypeError(
+                "Invalid json proof, type should be str, not {}".format(
+                    type(json_proof)
+                )
+            )
         json_proof = json.loads(json_proof)
         encoded_proof_list = json_proof["proof"]
 
-        if 'MPT' in json_proof['proof_type']:
+        if "MPT" in json_proof["proof_type"]:
             # Build the mmpt proof from string
             raise NotImplementedError("MPT proofs are not supported yet")
-        
-        elif 'MT' in json_proof['proof_type']:
+
+        elif "MT" in json_proof["proof_type"]:
             # Build the mpt proof from string
             proof = []
             for i in encoded_proof_list:
                 proof.append(i.encode())
-        
+
         else:
-            raise TypeError("Invalid proof type {}".format(json_proof['proof_type']))
+            raise TypeError("Invalid proof type {}".format(json_proof["proof_type"]))
 
         proof = Proof(
-            target_key=json_proof["target_key"].encode(), 
-            root_hash=json_proof["root_hash"].encode(), 
+            target_key=json_proof["target_key"].encode(),
+            root_hash=json_proof["root_hash"].encode(),
             proof=tuple(proof),
-            proof_type=json_proof["proof_type"].encode()
+            proof_type=json_proof["proof_type"].encode(),
         )
         proof._timestamp = json_proof["timestamp"].encode()
         return proof
@@ -191,11 +211,11 @@ class Proof:
         bytes
             The proof encoded in rlp.
         """
-        if 'MT' not in self._type.decode():
+        if "MT" not in self._type.decode():
             # For now only MT proofs are supported as this is always
             # one list of bytes entries. MPT proofs contain nested lists
             raise NotImplementedError("RLP encoding MPT proofs is not supported yet")
-        
+
         return rlp.encode(
             [
                 self._type,
@@ -222,7 +242,11 @@ class Proof:
             The decoded proof.
         """
         if not isinstance(rlp_bytes, bytes):
-            raise TypeError("Invalid rlp bytes, type should be bytes, not {}".format(type(rlp_bytes)))
+            raise TypeError(
+                "Invalid rlp bytes, type should be bytes, not {}".format(
+                    type(rlp_bytes)
+                )
+            )
 
         sedes = rlp.sedes.List(
             [
@@ -230,11 +254,15 @@ class Proof:
                 rlp.sedes.binary,
                 rlp.sedes.binary,
                 rlp.sedes.binary,
-                rlp.sedes.CountableList(rlp.sedes.binary)
+                rlp.sedes.CountableList(rlp.sedes.binary),
             ]
         )
         decoded = rlp.decode(rlp_bytes, sedes=sedes)
-        proof = Proof(target_key=decoded[2], root_hash=decoded[3], 
-                      proof=decoded[4], proof_type=decoded[0])
+        proof = Proof(
+            target_key=decoded[2],
+            root_hash=decoded[3],
+            proof=decoded[4],
+            proof_type=decoded[0],
+        )
         proof._timestamp = decoded[1]
         return proof

@@ -54,7 +54,7 @@ class Node:
     EMPTY_HASH = keccak_hash(rlp.encode(b""))
 
     @staticmethod
-    def decode(encoded_data : bytes, include_data : bool=True) -> "Node":
+    def decode(encoded_data: bytes, include_data: bool = True) -> "Node":
         """
         Decode the node from RLP.
 
@@ -102,7 +102,7 @@ class Node:
             return Extension(path, ref)
 
     @staticmethod
-    def into_reference(node : "Node") -> bytes:
+    def into_reference(node: "Node") -> bytes:
         """
         Returns reference to the given node.
 
@@ -146,7 +146,7 @@ class Leaf(Node):
 
     """
 
-    def __init__(self, path : "NibblePath", data : bytes) -> ...:
+    def __init__(self, path: "NibblePath", data: bytes) -> ...:
         """
         Initializes the leaf.
 
@@ -160,7 +160,7 @@ class Leaf(Node):
         self.path = path
         self.data = data
 
-    def encode(self, include_data : bool=True) -> bytes:
+    def encode(self, include_data: bool = True) -> bytes:
         """
         Encodes the leaf into RLP.
 

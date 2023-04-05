@@ -1,11 +1,9 @@
 from .merkletools import MerkleTools
 from .proof import Proof
 from typing import Union, List, Tuple
-# from typeguard import typechecked
 
 
 class MerkleTree(MerkleTools):
-
     def __init__(self, secure: bool = True, hash_type: str = "sha256") -> ...:
         """
         Initialize the MerkleTree object.
@@ -50,11 +48,12 @@ class MerkleTree(MerkleTools):
             raise TypeError("`value` must be a bytes not {}".format(type(value)))
         self.add_leaf(value)
 
-    # @typechecked
     def put_list(self, values: Union[List, Tuple]) -> ...:
         """Add a list of leaves to the Merkle tree."""
         if not isinstance(values, (list, tuple)):
-            raise TypeError("`values` must be a list or tuple not {}".format(type(values)))
+            raise TypeError(
+                "`values` must be a list or tuple not {}".format(type(values))
+            )
         for value in values:
             self.put(value)
 
@@ -116,7 +115,9 @@ class MerkleTree(MerkleTools):
             The proof of inclusion for the leaf at the given index.
         """
         if not isinstance(key, bytes):
-            raise TypeError("Invalid key, type should be bytes, not {}".format(type(key)))
+            raise TypeError(
+                "Invalid key, type should be bytes, not {}".format(type(key))
+            )
         proof = super().get_proof_of_inclusion(key)
         byte_proof = []
         for p in proof:
@@ -159,13 +160,13 @@ class MerkleTree(MerkleTools):
             )
         except ValueError:
             return False
-        
+
         # Compare the proof hash to the current root hash
         if valid:
             return self.get_merkle_root() == proof.trie_root
         else:
             return False
-        
+
         raise Exception("This should never happen")
 
     def get_proof_of_exclusion(self):

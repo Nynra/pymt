@@ -31,7 +31,7 @@ print("New root hash is {}".format(trie.root_hash().hex()))
 # Reload the trie with the old root hash
 trie_from_old_hash = MPT(storage, root=old_root)
 
-print('From the old trie: {}'.format(trie_from_old_hash.get(b"doge")))
+print("From the old trie: {}".format(trie_from_old_hash.get(b"doge")))
 
 try:
     print(trie.get(b"doge"))

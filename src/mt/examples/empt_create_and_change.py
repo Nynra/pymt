@@ -1,5 +1,6 @@
 import sys, os
-#Following lines are for assigning parent directory dynamically.
+
+# Following lines are for assigning parent directory dynamically.
 dir_path = os.path.dirname(os.path.realpath(__file__))
 parent_dir_path = os.path.abspath(os.path.join(dir_path, os.pardir))
 sys.path.insert(0, parent_dir_path)
@@ -11,10 +12,10 @@ storage = {}
 trie = EMPT(storage)
 
 # Insert some data
-trie.update(b'do', b'a deer')
-trie.update(b'dog', b'a doge')
-trie.update(b'doge', b'a doge')
-trie.update(b'horse', b'a horse')
+trie.update(b"do", b"a deer")
+trie.update(b"dog", b"a doge")
+trie.update(b"doge", b"a doge")
+trie.update(b"horse", b"a horse")
 
 # Retrieve the data
 old_root = trie.root()
@@ -28,10 +29,10 @@ print("New root hash is {}".format(trie.root_hash().hex()))
 # Reload the trie with the old root hash
 trie_from_old_hash = EMPT(storage, root=old_root)
 
-print('From the old trie: {}'.format(trie_from_old_hash.get(b'doge')))
-trie.delete(b'doge')  # Delete one of the datapoints
+print("From the old trie: {}".format(trie_from_old_hash.get(b"doge")))
+trie.delete(b"doge")  # Delete one of the datapoints
 
 try:
-    print(trie.get(b'doge'))
+    print(trie.get(b"doge"))
 except KeyError:
     print("The key b'doge' is not accessible in a new trie.")
