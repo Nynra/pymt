@@ -5,5 +5,3 @@ eth-utils
 pycryptodome
 rlp
 toolz
-typeguard
-pysha3

@@ -5,7 +5,7 @@ from typing import Union, List, Tuple
 
 
 class MerkleTree(MerkleTools):
-    # @typechecked
+
     def __init__(self, secure: bool = True, hash_type: str = "sha256") -> ...:
         """
         Initialize the MerkleTree object.
@@ -26,7 +26,6 @@ class MerkleTree(MerkleTools):
         super().__init__(hash_type=hash_type, secure=secure)
 
     # TRIE FUNCTIONS
-    # @typechecked
     def put(self, value: bytes) -> ...:
         """
         Add a leaf to the Merkle tree.
@@ -47,15 +46,18 @@ class MerkleTree(MerkleTools):
         TypeError
             If a value is not a bytes, str or dict.
         """
+        if not isinstance(value, bytes):
+            raise TypeError("`value` must be a bytes not {}".format(type(value)))
         self.add_leaf(value)
 
     # @typechecked
-    def put_list(self, values: List[bytes]) -> ...:
+    def put_list(self, values: Union[List, Tuple]) -> ...:
         """Add a list of leaves to the Merkle tree."""
+        if not isinstance(values, (list, tuple)):
+            raise TypeError("`values` must be a list or tuple not {}".format(type(values)))
         for value in values:
             self.put(value)
 
-    # @typechecked
     def get(self, index: int):
         """
         Get the leaf value at the given index.
@@ -70,6 +72,8 @@ class MerkleTree(MerkleTools):
         bytes
             The leaf value at the given index.
         """
+        if not isinstance(index, int):
+            raise TypeError("`index` must be an int not {}".format(type(index)))
         return self.get_leaf(index)
 
     def get_count(self) -> int:
@@ -126,7 +130,6 @@ class MerkleTree(MerkleTools):
             proof_type=b"MT-POI",
         )
 
-    # @typechecked
     def verify_proof_of_inclusion(self, proof: Proof) -> bool:
         """
         Verify the given proof.
@@ -141,6 +144,8 @@ class MerkleTree(MerkleTools):
         bool
             True if the proof is valid, False otherwise.
         """
+        if not isinstance(proof, Proof):
+            raise TypeError("`proof` must be a Proof object not {}".format(type(proof)))
         str_proof = []
         for p in proof.proof:
             str_proof.append({p[0].decode(): p[1].decode()})

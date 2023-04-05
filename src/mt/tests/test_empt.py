@@ -304,8 +304,8 @@ class TestFullEmptSecure(TestFullEmptNonSecure):
 class TestSparseEmptNonSecure(unittest.TestCase, ProofOfInclusion, ProofOfExclusion):
 
     ROOT_HASH = "175d31ebdcc71dec9a0f869cf7e00585f861413e910170514eeb76c080a3801d"
-    ROOT_HASH_AFTER_UPDATES = "2e03ca6531c64b42ec14b616a8204f37dcbb256715ae344a4d045178e1f8a72b"
-    ROOT_HASH_AFTER_DELETES = "b83e35c275f77b8eca2f416b37df7533f48f7194fea592a0edcfbe5f62c2aee7"
+    ROOT_HASH_AFTER_UPDATES = "ca42a25c5475fef5c6653df13d88e509e256f1ae66eb801a860807c7d0825c01"
+    ROOT_HASH_AFTER_DELETES = "681cc4ca69dc2a35ddad3cf24cc7122b682daf4c7e2f9cbeed0536a172bb2839"
 
     @classmethod
     def setUpClass(cls):

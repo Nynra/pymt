@@ -5,7 +5,6 @@ import rlp
 from _collections_abc import MutableMapping
 from .proof import Proof
 from typing import Iterable, Union
-#from typeguard import typechecked
 
 
 class DataReference:
@@ -16,7 +15,6 @@ class DataReference:
     while still being able to verify the data.
     """
 
-    # # @typechecked
     def __init__(self, key: bytes, data: bytes) -> ...:
         """
         Initiate the data reference.
@@ -28,7 +26,12 @@ class DataReference:
         data : bytes
             The data that is referenced.
         """
+        if not isinstance(key, bytes):
+            raise TypeError("key must be bytes, not {}".format(type(key)))
         self._key = key
+
+        if not isinstance(data, bytes):
+            raise TypeError("data must be bytes, not {}".format(type(data)))
         self._data = data
         self._hash = self.__hash__()
 
@@ -51,6 +54,8 @@ class DataReference:
 
     # DUNDER METHODS
     def __eq__(self, other) -> bool:
+        if not isinstance(other, DataReference):
+            return False
         return self.hash == other.hash
 
     def __hash__(self) -> int:
@@ -64,6 +69,8 @@ class DataReference:
     @staticmethod
     def decode(data: bytes) -> "DataReference":
         """Decode the data reference from bytes."""
+        if not isinstance(data, bytes):
+            raise TypeError("data must be bytes, not {}".format(type(data)))
         sedes = rlp.sedes.List(
             [
                 rlp.sedes.binary,
@@ -109,7 +116,6 @@ class EMPT(MutableMapping):
         custom storage class (for example :class:`dict`).
     """
 
-    # # # @typechecked
     def __init__(
         self,
         trie_storage={},
@@ -228,7 +234,6 @@ class EMPT(MutableMapping):
             ref = DataReference(key, self._data_storage[key])
             self._trie.update(key, ref.encode())
 
-    # @typechecked
     def get(self, key: bytes) -> bytes:
         """
         Get the value of a certain key.
@@ -236,6 +241,9 @@ class EMPT(MutableMapping):
         The value is retrieved from the data storage and validated against the
         trie.
         """
+        if not isinstance(key, bytes):
+            raise TypeError("The key must be type bytes, not {}".format(type(key)))
+
         data = self._data_storage[key]
         ref = self._trie.get(key)
         ref = DataReference.decode(ref)
@@ -249,6 +257,8 @@ class EMPT(MutableMapping):
     # @typechecked
     def get_reference(self, key: bytes) -> DataReference:
         """Return the data reference corresponding with the key."""
+        if not isinstance(key, bytes):
+            raise TypeError("The key must be type bytes, not {}".format(type(key)))
         return DataReference.decode(self._trie.get(key))
 
     # @typechecked
@@ -259,6 +269,10 @@ class EMPT(MutableMapping):
         The value is stored in the data storage and a reference is stored in
         the trie.
         """
+        if not isinstance(key, bytes):
+            raise TypeError("The key must be type bytes, not {}".format(type(key)))
+        if not isinstance(value, bytes):
+            raise TypeError("The value must be type bytes, not {}".format(type(value)))
         ref = DataReference(key, value)
         self._trie.update(key, ref.encode())
         self._data_storage[key] = value
@@ -271,6 +285,8 @@ class EMPT(MutableMapping):
         The value is deleted from the data storage and the reference is deleted
         from the trie.
         """
+        if not isinstance(key, bytes):
+            raise TypeError("The key must be type bytes, not {}".format(type(key)))
         del self._data_storage[key]
         self._trie.delete(key)
 
@@ -281,6 +297,8 @@ class EMPT(MutableMapping):
 
         The key is checked in the trie.
         """
+        if not isinstance(key, bytes):
+            raise TypeError("The key must be type bytes, not {}".format(type(key)))
         return self._trie.contains(key)
 
     # CONVERSION METHODS
@@ -305,13 +323,14 @@ class EMPT(MutableMapping):
         )
 
     # PROOF METHODS
-    # @typechecked
     def get_proof_of_inclusion(self, key: bytes) -> Proof:
         """
         Get the proof of inclusion for a certain key.
 
         The proof of inclusion is a proof that a certain key is in the trie.
         """
+        if not isinstance(key, bytes):
+            raise TypeError("The key must be type bytes, not {}".format(type(key)))
         return self._trie.get_proof_of_inclusion(key)
 
     # @typechecked
@@ -321,6 +340,8 @@ class EMPT(MutableMapping):
 
         The proof of inclusion is a proof that a certain key is in the trie.
         """
+        if not isinstance(proof, Proof):
+            raise TypeError("The proof must be type Proof, not {}".format(type(proof)))
         return self._trie.verify_proof_of_inclusion(proof)
 
     # @typechecked
@@ -330,6 +351,8 @@ class EMPT(MutableMapping):
 
         The proof of exclusion is a proof that a certain key is not in the trie.
         """
+        if not isinstance(key, bytes):
+            raise TypeError("The key must be type bytes, not {}".format(type(key)))
         return self._trie.get_proof_of_exclusion(key)
 
     # @typechecked
@@ -339,6 +362,8 @@ class EMPT(MutableMapping):
 
         The proof of exclusion is a proof that a certain key is not in the trie.
         """
+        if not isinstance(proof, Proof):
+            raise TypeError("The proof must be type Proof, not {}".format(type(proof)))
         return self._trie.verify_proof_of_exclusion(proof)
 
 
@@ -358,7 +383,6 @@ class SparseEMPT:
         and creation and verification of proofs can still be done.
     """
 
-    # @typechecked
     def __init__(
         self, trie_storage={}, root: Union[bytes, None] = None, secure: bool = False
     ):
@@ -415,13 +439,14 @@ class SparseEMPT:
         return RootEMPT(mode=b"ROOT", secure=self._trie.secure, root=self._trie.root())
 
     # TRIE METHODS
-    # @typechecked
     def get_reference(self, key: bytes) -> DataReference:
         """
         Get the reference of a certain key.
 
         The reference is stored in the trie.
         """
+        if not isinstance(key, bytes):
+            raise TypeError("The key must be type bytes, not {}".format(type(key)))
         return DataReference.decode(self._trie.get(key))
 
     # @typechecked
@@ -435,62 +460,72 @@ class SparseEMPT:
             Because this is a sparse trie the data will not be stored,
             only the reference to the data.
         """
+        if not isinstance(key, bytes):
+            raise TypeError("The key must be type bytes, not {}".format(type(key)))
+        if not isinstance(value, bytes):
+            raise TypeError("The value must be type bytes, not {}".format(type(value)))
         ref = DataReference(key, value)
         self._trie.update(key, ref.encode())
 
-    # @typechecked
     def delete(self, key: bytes) -> ...:
         """
         Delete the value of a certain key.
 
         The reference to the value is deleted from the trie.
         """
+        if not isinstance(key, bytes):
+            raise TypeError("The key must be type bytes, not {}".format(type(key)))
         self._trie.delete(key)
 
-    # @typechecked
     def contains(self, key: bytes) -> bool:
         """
         Check whether a certain key is in the trie.
 
         The reference to the value is checked in the trie.
         """
+        if not isinstance(key, bytes):
+            raise TypeError("The key must be type bytes, not {}".format(type(key)))
         return self._trie.contains(key)
 
     # PROOF METHODS
-    # @typechecked
     def get_proof_of_inclusion(self, key: bytes) -> Proof:
         """
         Get the proof of inclusion for a certain key.
 
         The proof of inclusion is a proof that a certain key is in the trie.
         """
+        if not isinstance(key, bytes):
+            raise TypeError("The key must be type bytes, not {}".format(type(key)))
         return self._trie.get_proof_of_inclusion(key)
 
-    # @typechecked
     def verify_proof_of_inclusion(self, proof: Proof) -> bool:
         """
         Validate a proof of inclusion.
 
         The proof of inclusion is a proof that a certain key is in the trie.
         """
+        if not isinstance(proof, Proof):
+            raise TypeError("The proof must be type Proof, not {}".format(type(proof)))
         return self._trie.verify_proof_of_inclusion(proof)
 
-    # @typechecked
     def get_proof_of_exclusion(self, key: bytes) -> Proof:
         """
         Get the proof of exclusion for a certain key.
 
         The proof of exclusion is a proof that a certain key is not in the trie.
         """
+        if not isinstance(key, bytes):
+            raise TypeError("The key must be type bytes, not {}".format(type(key)))
         return self._trie.get_proof_of_exclusion(key)
 
-    # @typechecked
     def verify_proof_of_exclusion(self, proof: Proof) -> bool:
         """
         Validate a proof of exclusion.
 
         The proof of exclusion is a proof that a certain key is not in the trie.
         """
+        if not isinstance(proof, Proof):
+            raise TypeError("The proof must be type Proof, not {}".format(type(proof)))
         return self._trie.verify_proof_of_exclusion(proof)
 
 
@@ -502,8 +537,7 @@ class RootEMPT:
     uses the trie root to validate proofs of inclusion and exclusion.
     """
 
-    # @typechecked
-    def __init__(self, root: bytes, secure: bool = False):
+    def __init__(self, root: bytes, secure: bool = False) -> ...:
         """
         Initialize the root storage MMPT.
 
@@ -517,20 +551,22 @@ class RootEMPT:
         self._trie = MPT({}, root, secure=secure)
 
     # PROOF VALIDATION METHODS
-    # @typechecked
     def verify_proof_of_inclusion(self, proof: Proof) -> bool:
         """
         Validate a proof of inclusion.
 
         The proof of inclusion is a proof that a certain key is in the trie.
         """
+        if not isinstance(proof, Proof):
+            raise TypeError("The proof must be type Proof, not {}".format(type(proof)))
         return self._trie.verify_proof_of_inclusion(proof)
 
-    # @typechecked
     def verify_proof_of_exclusion(self, proof: Proof) -> bool:
         """
         Validate a proof of exclusion.
 
         The proof of exclusion is a proof that a certain key is not in the trie.
         """
+        if not isinstance(proof, Proof):
+            raise TypeError("The proof must be type Proof, not {}".format(type(proof)))
         return self._trie.verify_proof_of_exclusion(proof)
