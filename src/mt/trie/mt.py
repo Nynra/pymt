@@ -1,11 +1,11 @@
 from .merkletools import MerkleTools
 from .proof import Proof
 from typing import Union, List, Tuple
-from typeguard import typechecked
+# from typeguard import typechecked
 
 
 class MerkleTree(MerkleTools):
-    @typechecked
+    # @typechecked
     def __init__(self, secure: bool = True, hash_type: str = "sha256") -> ...:
         """
         Initialize the MerkleTree object.
@@ -26,7 +26,7 @@ class MerkleTree(MerkleTools):
         super().__init__(hash_type=hash_type, secure=secure)
 
     # TRIE FUNCTIONS
-    @typechecked
+    # @typechecked
     def put(self, value: bytes) -> ...:
         """
         Add a leaf to the Merkle tree.
@@ -49,13 +49,13 @@ class MerkleTree(MerkleTools):
         """
         self.add_leaf(value)
 
-    @typechecked
+    # @typechecked
     def put_list(self, values: List[bytes]) -> ...:
         """Add a list of leaves to the Merkle tree."""
         for value in values:
             self.put(value)
 
-    @typechecked
+    # @typechecked
     def get(self, index: int):
         """
         Get the leaf value at the given index.
@@ -92,7 +92,6 @@ class MerkleTree(MerkleTools):
         return super().get_merkle_root().encode()
 
     # PROOF FUNCTIONS
-    @typechecked
     def get_proof_of_inclusion(self, key: bytes) -> Proof:
         """
         Get the proof of inclusion for the leaf at the given index.
@@ -112,21 +111,22 @@ class MerkleTree(MerkleTools):
         Proof
             The proof of inclusion for the leaf at the given index.
         """
-        # Convert the proof from str to bytes
+        if not isinstance(key, bytes):
+            raise TypeError("Invalid key, type should be bytes, not {}".format(type(key)))
         proof = super().get_proof_of_inclusion(key)
         byte_proof = []
         for p in proof:
             for k, v in p.items():
-                byte_proof.append({k.encode(): v.encode()})
+                byte_proof.append((k.encode(), v.encode()))
 
         return Proof(
             target_key=key,
             root_hash=self.get_merkle_root(),
-            proof=byte_proof,
-            type=b"MT-POI",
+            proof=tuple(byte_proof),
+            proof_type=b"MT-POI",
         )
 
-    @typechecked
+    # @typechecked
     def verify_proof_of_inclusion(self, proof: Proof) -> bool:
         """
         Verify the given proof.
@@ -143,18 +143,25 @@ class MerkleTree(MerkleTools):
         """
         str_proof = []
         for p in proof.proof:
-            for k, v in p.items():
-                str_proof.append({k.decode(): v.decode()})
+            str_proof.append({p[0].decode(): p[1].decode()})
 
         merkle_root = bytes.fromhex(proof.trie_root.decode())
         target_hash = proof.target_key
 
         try:
-            return super().verify_proof_of_inclusion(
+            valid = super().verify_proof_of_inclusion(
                 str_proof, merkle_root=merkle_root, target_hash=target_hash
             )
         except ValueError:
             return False
+        
+        # Compare the proof hash to the current root hash
+        if valid:
+            return self.get_merkle_root() == proof.trie_root
+        else:
+            return False
+        
+        raise Exception("This should never happen")
 
     def get_proof_of_exclusion(self):
         raise NotImplementedError(

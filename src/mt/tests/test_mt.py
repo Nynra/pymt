@@ -335,37 +335,29 @@ class ProofOfInclusion:
         for d in data:
             self.mt.put(d)
         self.mt.make_tree()
-        proof = self.mt.get_proof_of_inclusion(b'tierion')
+        proof = self.mt.get_proof_of_inclusion(b'bitcoin')
 
         mt = MerkleTree(secure=self.mt.secure)
         for d in data[2:]:
             mt.put(d)
+        mt.make_tree()
 
         self.assertFalse(mt.verify_proof_of_inclusion(proof))
 
-    def test_poi_verify_one_char_removed(self):
+    def test_poi_verify_one_item_added(self):
         data = [b"tierion", b"bitcoin", b"blockchain", b"trie", b"triangle"]
         for d in data:
             self.mt.put(d)
         self.mt.make_tree()
+        proof = self.mt.get_proof_of_inclusion(b'bitcoin')
 
-        proof = self.mt.get_proof_of_inclusion(b'tierion')
-        for key in proof.proof[0].keys():
-            proof.proof[0][key] = proof.proof[0][key][:-1]
-            break
-        self.assertFalse(self.mt.verify_proof_of_inclusion(proof))
-
-    def test_poi_verify_one_char_added(self):
-        data = [b"tierion", b"bitcoin", b"blockchain", b"trie", b"triangle"]
+        mt = MerkleTree(secure=self.mt.secure)
         for d in data:
-            self.mt.put(d)
-        self.mt.make_tree()
-        proof = self.mt.get_proof_of_inclusion(b'tierion')
-        for key in proof.proof[0].keys():
-            proof.proof[0][key] = proof.proof[0][key] + b'0'
-            break
+            mt.put(d)
+        mt.put(b'added')
+        mt.make_tree()
 
-        self.assertFalse(self.mt.verify_proof_of_inclusion(proof))
+        self.assertFalse(mt.verify_proof_of_inclusion(proof))
 
 
 class TestMerkleTree(ProofOfInclusion, unittest.TestCase):

@@ -16,15 +16,24 @@ import json
 class TestProof(unittest.TestCase):
 
     def setUp(self):
-        self.proof = Proof(b"target_key", b"root_hash", [b"proof", b"proof2", b"proof3"],
-                           type=b'MPT-POE')
+        self.proof = Proof(b"target_key", b"root_hash", (b"proof", b"proof2", b"proof3"),
+                           proof_type=b'MT-POI')
         self.dict_content = {
-            "type": self.proof._type,
+            "proof_type": self.proof._type,
             "timestamp": self.proof._timestamp,
             "target_key": self.proof._target_key,
             "root_hash": self.proof._root_hash,
-            "proof": str(self.proof._proof),
+            "proof": self.proof._proof,
         }
+
+    def _get_str_dict(self) -> dict:
+        dict_content = self.dict_content.copy()
+        for k, v in dict_content.items():
+            if isinstance(v, (list, tuple)):
+                dict_content[k] = [i.decode() for i in v]
+            else:
+                dict_content[k] = dict_content[k].decode()
+        return dict_content
 
     def assertDict(self, dict1, dict2):
         for key in dict1:
@@ -39,19 +48,20 @@ class TestProof(unittest.TestCase):
         self.assertEqual(expected, self.proof.__hash__())
 
     def test_eq(self):
-        proof1 = Proof(b"target_key", b"root_hash", [b"proof", b"proof2", b"proof3"],
-                       type=b'MPT-POE')
-        proof2 = Proof(b"target_key", b"root_hash", [b"proof", b"proof2", b"proof3"],
-                       type=b'MPT-POE')
-        proof3 = Proof(b"target_key", b"root_hash", [b"proof", b"proof2", b"proof3"],
-                       type=b'MPT-POI')
+        proof1 = Proof(b"target_key", b"root_hash", (b"proof", b"proof2", b"proof3"),
+                       proof_type=b'MPT-POE')
+        proof2 = Proof(b"target_key", b"root_hash", (b"proof", b"proof2", b"proof3"),
+                       proof_type=b'MPT-POE')
+        proof3 = Proof(b"target_key", b"root_hash", (b"proof", b"proof2", b"proof3"),
+                       proof_type=b'MPT-POI')
         proof2._timestamp = proof1._timestamp
         self.assertTrue(proof1 == proof2)
         self.assertFalse(proof1 == proof3)
 
     def test_encode_decode_json(self):
-        expected = json.dumps(self.dict_content)
-        self.assertEqual(expected, self.proof.encode_json())
+        expected = json.dumps(self._get_str_dict())
+        res = self.proof.encode_json()
+        self.assertEqual(expected, res)
 
         proof = Proof.decode_json(expected)
         self.assertEqual(self.proof, proof)

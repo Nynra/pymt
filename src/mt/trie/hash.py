@@ -1,20 +1,20 @@
 from Crypto.Hash import keccak
 from typing import Tuple, List
-from typeguard import typechecked
+# from typeguard import typechecked
 
 
-@typechecked
+# @typechecked
 def keccak_hash(data : bytes, hexdigest : bool=False) -> bytes:
     """Hash data with keccak256 algorithm."""
-    keccak_hash = keccak.new(digest_bits=256)
-    keccak_hash.update(data)
+    hash = keccak.new(digest_bits=256)
+    hash.update(data)
     if hexdigest:
-        return keccak_hash.hexdigest().encode()
+        return hash.hexdigest().encode()
     else:
-        return keccak_hash.digest()
+        return hash.digest()
 
 
-@typechecked
+# @typechecked
 def keccak_hash_list(data :List[bytes], hexdigest : bool=False) -> bytes:
     """Hash list of data with keccak256 algorithm."""
     keccak_hash = keccak.new(digest_bits=256)
@@ -24,3 +24,11 @@ def keccak_hash_list(data :List[bytes], hexdigest : bool=False) -> bytes:
         return keccak_hash.hexdigest().encode()
     else:
         return keccak_hash.digest()
+    
+
+if __name__ == "__main__":
+    data = b"Hello World"
+    print(keccak_hash(data))
+    print(keccak_hash(data, hexdigest=True))
+    print(keccak_hash_list([data, data]))
+    print(keccak_hash_list([data, data], hexdigest=True))

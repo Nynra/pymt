@@ -1,7 +1,7 @@
 import hashlib
 import binascii
 import sys
-from typeguard import typechecked
+# from typeguard import typechecked
 from typing import List, Union, Tuple
 
 
@@ -15,7 +15,7 @@ if sys.version_info < (3, 6):
 
 class MerkleTools(object):
 
-    @typechecked
+    # @typechecked
     def __init__(self, hash_type : str="sha256", secure : bool=False) -> ...:
         """
         Initialize the MerkleTools object
@@ -141,7 +141,7 @@ class MerkleTools(object):
                 self._calculate_next_level()
         self.is_ready = True
 
-    @typechecked
+    # @typechecked
     def get_merkle_root(self) -> str:
         """
         Get the Merkle root of the tree.

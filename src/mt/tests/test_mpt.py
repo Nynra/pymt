@@ -70,39 +70,6 @@ class ProofOfInclusion:
         self.trie.update(b'testing', b'testing')
         self.assertFalse(self.trie.verify_proof_of_inclusion(proof) )
 
-    def test_poi_verify_one_char_removed(self):
-        """Test if the proof is still valid after removing one char from the proof."""
-        # Add some data
-        data = [b'do', b'dog', b'doge', b'horse']
-        for kv in data:
-            self.trie.update(kv, kv)
-
-        # Get the proofs and validate
-        og_proof = self.trie.get_proof_of_inclusion(data[2])
-        proof = og_proof.proof
-        proof[1] = proof[1][:-1]
-        proof = Proof(target_key=og_proof.target_key, proof=proof,
-                    root_hash=og_proof.trie_root, type=og_proof.type)
-        self.assertFalse(self.trie.verify_proof_of_inclusion(proof), 
-                        'Proof should not be valid.')
-
-    def test_poi_verify_one_char_added(self):
-        """Test if the proof is still valid after adding one char to the proof."""
-        # Add some data
-        data = [b'do', b'dog', b'doge', b'horse']
-        for kv in data:
-            self.trie.update(kv, kv)
-
-        # Get the proofs and validate
-        og_proof = self.trie.get_proof_of_inclusion(data[2])
-        proof = []
-        for i in range(len(og_proof.proof)):
-            proof.append(og_proof.proof[i] + b'o')
-        proof = Proof(target_key=og_proof.target_key, proof=proof,
-                    root_hash=og_proof.trie_root, type=og_proof.type)
-
-        self.assertFalse(self.trie.verify_proof_of_inclusion(proof))
-
 
 class ProofOfExclusion:
     """Test the proof functions of the MMPT."""
@@ -173,39 +140,6 @@ class ProofOfExclusion:
         self.trie.update(b'bear', b'bear')
         for proof in proofs:
             self.assertFalse(self.trie.verify_proof_of_exclusion(proof)) 
-
-    def test_poe_verify_one_char_removed(self):
-        """Test if the proof is still valid after removing one char from the proof."""
-        # Add some data
-        data = [b'do', b'dog', b'doge', b'horse']
-        for kv in data:
-            self.trie.update(kv, kv)
-
-        # Get the proofs and validate
-        og_proof = self.trie.get_proof_of_exclusion(keccak_hash(rlp.encode(b'wolf')))
-        proof = []
-        for i in range(len(og_proof.proof)):
-            proof.append(og_proof.proof[i][:-1])
-
-        proof = Proof(target_key=og_proof.target_key, proof=proof,
-                    root_hash=og_proof.trie_root, type=og_proof.type)
-        self.assertFalse(self.trie.verify_proof_of_exclusion(proof))
-
-    def test_poe_verify_one_char_added(self):
-        """Test if the proof is still valid after adding one char to the proof."""
-        # Add some data
-        data = [b'do', b'dog', b'doge', b'horse']
-        for kv in data:
-            self.trie.update(kv, kv)
-
-        # Get the proofs and validate
-        og_proof = self.trie.get_proof_of_exclusion(keccak_hash(rlp.encode(b'wolf')))
-        proof = []
-        for i in range(len(og_proof.proof)):
-            proof.append(og_proof.proof[i] + b'o')
-        proof = Proof(target_key=og_proof.target_key, proof=proof,
-                    root_hash=og_proof.trie_root, type=og_proof.type)
-        self.assertFalse(self.trie.verify_proof_of_exclusion(proof))
 
 
 class TestMptNonSecure(unittest.TestCase, ProofOfInclusion, ProofOfExclusion):

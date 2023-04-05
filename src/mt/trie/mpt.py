@@ -20,7 +20,7 @@ from .exceptions import (
     InvalidNodeError,
 )
 from typing import Tuple, List, Union, Optional
-from typeguard import typechecked
+# from typeguard import typechecked
 import rlp
 
 
@@ -52,7 +52,7 @@ class MPT:
         This method removes a value associtated with provided key.
     """
 
-    @typechecked
+    # @typechecked
     def __init__(self, storage: dict, root: Union[bytes, None] = None, secure: bool = False) -> ...:
         """
         Create a new instance of MPT.
@@ -301,11 +301,11 @@ class MPT:
         return Proof(
             target_key=encoded_key,
             root_hash=self.root(),
-            proof=proof_list,
-            type=b"MPT-POI",
+            proof=tuple(proof_list),
+            proof_type=b"MPT-POI",
         )
 
-    @typechecked
+    # @typechecked
     def verify_proof_of_inclusion(self, proof: Proof) -> bool:
         """
         This method verifies a proof object containing a proof of inclusion.
@@ -346,9 +346,15 @@ class MPT:
                 ] = encoded_node
             except rlp.DecodingError:
                 return False
-        return self._verify_proof_of_inclusion(
+        valid = self._verify_proof_of_inclusion(
             self._root, NibblePath(proof.target_key), proof_storage
         )
+        # Check if the current trie hash is the sam as the proof root
+        if valid and self.root_hash() == proof.trie_root:
+            return True
+        else:
+            return False
+
 
     def get_proof_of_exclusion(self, encoded_key: bytes) -> Proof:
         """
@@ -405,11 +411,11 @@ class MPT:
         return Proof(
             target_key=encoded_key,
             root_hash=self.root_hash(),
-            proof=proof_list,
-            type=b"MPT-POE",
+            proof=tuple(proof_list),
+            proof_type=b"MPT-POE",
         )
 
-    @typechecked
+    # @typechecked
     def verify_proof_of_exclusion(self, proof: Proof) -> bool:
         """
         This method verifies a proof of exclusion for a key.

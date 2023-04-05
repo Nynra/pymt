@@ -5,7 +5,7 @@ import rlp
 from _collections_abc import MutableMapping
 from .proof import Proof
 from typing import Iterable, Union
-from typeguard import typechecked
+#from typeguard import typechecked
 
 
 class DataReference:
@@ -16,7 +16,7 @@ class DataReference:
     while still being able to verify the data.
     """
 
-    @typechecked
+    # # @typechecked
     def __init__(self, key: bytes, data: bytes) -> ...:
         """
         Initiate the data reference.
@@ -109,7 +109,7 @@ class EMPT(MutableMapping):
         custom storage class (for example :class:`dict`).
     """
 
-    @typechecked
+    # # # @typechecked
     def __init__(
         self,
         trie_storage={},
@@ -228,7 +228,7 @@ class EMPT(MutableMapping):
             ref = DataReference(key, self._data_storage[key])
             self._trie.update(key, ref.encode())
 
-    @typechecked
+    # @typechecked
     def get(self, key: bytes) -> bytes:
         """
         Get the value of a certain key.
@@ -246,12 +246,12 @@ class EMPT(MutableMapping):
             )
         return data
 
-    @typechecked
+    # @typechecked
     def get_reference(self, key: bytes) -> DataReference:
         """Return the data reference corresponding with the key."""
         return DataReference.decode(self._trie.get(key))
 
-    @typechecked
+    # @typechecked
     def update(self, key: bytes, value: bytes) -> ...:
         """
         Set the value of a certain key.
@@ -263,7 +263,7 @@ class EMPT(MutableMapping):
         self._trie.update(key, ref.encode())
         self._data_storage[key] = value
 
-    @typechecked
+    # @typechecked
     def delete(self, key: bytes) -> ...:
         """
         Delete the value of a certain key.
@@ -274,7 +274,7 @@ class EMPT(MutableMapping):
         del self._data_storage[key]
         self._trie.delete(key)
 
-    @typechecked
+    # @typechecked
     def contains(self, key: bytes) -> bool:
         """
         Check if a certain key is in the storage.
@@ -305,7 +305,7 @@ class EMPT(MutableMapping):
         )
 
     # PROOF METHODS
-    @typechecked
+    # @typechecked
     def get_proof_of_inclusion(self, key: bytes) -> Proof:
         """
         Get the proof of inclusion for a certain key.
@@ -314,7 +314,7 @@ class EMPT(MutableMapping):
         """
         return self._trie.get_proof_of_inclusion(key)
 
-    @typechecked
+    # @typechecked
     def verify_proof_of_inclusion(self, proof: Proof) -> bool:
         """
         Validate a proof of inclusion.
@@ -323,7 +323,7 @@ class EMPT(MutableMapping):
         """
         return self._trie.verify_proof_of_inclusion(proof)
 
-    @typechecked
+    # @typechecked
     def get_proof_of_exclusion(self, key: bytes) -> Proof:
         """
         Get the proof of exclusion for a certain key.
@@ -332,7 +332,7 @@ class EMPT(MutableMapping):
         """
         return self._trie.get_proof_of_exclusion(key)
 
-    @typechecked
+    # @typechecked
     def verify_proof_of_exclusion(self, proof: Proof) -> bool:
         """
         Validate a proof of exclusion.
@@ -358,7 +358,7 @@ class SparseEMPT:
         and creation and verification of proofs can still be done.
     """
 
-    @typechecked
+    # @typechecked
     def __init__(
         self, trie_storage={}, root: Union[bytes, None] = None, secure: bool = False
     ):
@@ -415,7 +415,7 @@ class SparseEMPT:
         return RootEMPT(mode=b"ROOT", secure=self._trie.secure, root=self._trie.root())
 
     # TRIE METHODS
-    @typechecked
+    # @typechecked
     def get_reference(self, key: bytes) -> DataReference:
         """
         Get the reference of a certain key.
@@ -424,7 +424,7 @@ class SparseEMPT:
         """
         return DataReference.decode(self._trie.get(key))
 
-    @typechecked
+    # @typechecked
     def update(self, key: bytes, value: bytes) -> ...:
         """
         Set the value of a certain key.
@@ -438,7 +438,7 @@ class SparseEMPT:
         ref = DataReference(key, value)
         self._trie.update(key, ref.encode())
 
-    @typechecked
+    # @typechecked
     def delete(self, key: bytes) -> ...:
         """
         Delete the value of a certain key.
@@ -447,7 +447,7 @@ class SparseEMPT:
         """
         self._trie.delete(key)
 
-    @typechecked
+    # @typechecked
     def contains(self, key: bytes) -> bool:
         """
         Check whether a certain key is in the trie.
@@ -457,7 +457,7 @@ class SparseEMPT:
         return self._trie.contains(key)
 
     # PROOF METHODS
-    @typechecked
+    # @typechecked
     def get_proof_of_inclusion(self, key: bytes) -> Proof:
         """
         Get the proof of inclusion for a certain key.
@@ -466,7 +466,7 @@ class SparseEMPT:
         """
         return self._trie.get_proof_of_inclusion(key)
 
-    @typechecked
+    # @typechecked
     def verify_proof_of_inclusion(self, proof: Proof) -> bool:
         """
         Validate a proof of inclusion.
@@ -475,7 +475,7 @@ class SparseEMPT:
         """
         return self._trie.verify_proof_of_inclusion(proof)
 
-    @typechecked
+    # @typechecked
     def get_proof_of_exclusion(self, key: bytes) -> Proof:
         """
         Get the proof of exclusion for a certain key.
@@ -484,7 +484,7 @@ class SparseEMPT:
         """
         return self._trie.get_proof_of_exclusion(key)
 
-    @typechecked
+    # @typechecked
     def verify_proof_of_exclusion(self, proof: Proof) -> bool:
         """
         Validate a proof of exclusion.
@@ -502,7 +502,7 @@ class RootEMPT:
     uses the trie root to validate proofs of inclusion and exclusion.
     """
 
-    @typechecked
+    # @typechecked
     def __init__(self, root: bytes, secure: bool = False):
         """
         Initialize the root storage MMPT.
@@ -517,7 +517,7 @@ class RootEMPT:
         self._trie = MPT({}, root, secure=secure)
 
     # PROOF VALIDATION METHODS
-    @typechecked
+    # @typechecked
     def verify_proof_of_inclusion(self, proof: Proof) -> bool:
         """
         Validate a proof of inclusion.
@@ -526,7 +526,7 @@ class RootEMPT:
         """
         return self._trie.verify_proof_of_inclusion(proof)
 
-    @typechecked
+    # @typechecked
     def verify_proof_of_exclusion(self, proof: Proof) -> bool:
         """
         Validate a proof of exclusion.

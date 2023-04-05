@@ -1,4 +1,3 @@
-pysha3>=1.0b1
 cytoolz
 eth-hash
 eth-typing
@@ -7,3 +6,4 @@ pycryptodome
 rlp
 toolz
 typeguard
+pysha3
