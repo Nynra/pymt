@@ -14,7 +14,8 @@ classifiers = [
     "Topic :: Security :: Cryptography",
 ]
 dependencies = [
-    "pysha3", 'importlib-metadata; python_version<"3.8"',
+    "cytoolz", "eth-hash", "eth-typing", "eth-utils", "pycryptodome",
+    "rlp", "toolz", 'importlib-metadata; python_version<"3.8"',
 ]
 
 [tool.setuptools.packages.find]
