@@ -1,11 +1,10 @@
-# This file is a template, and might need editing before it works on your project.
-# To contribute improvements to CI/CD templates, please follow the Development guide at:
-# https://docs.gitlab.com/ee/development/cicd/templates.html
-# This specific template is located at:
-# https://gitlab.com/gitlab-org/gitlab/-/blob/master/lib/gitlab/ci/templates/Python.gitlab-ci.yml
+stages:
+  - lint
+  - test
+  # - build
+  # - pages
+  # - deploy
 
-# Official language image. Look for the different tagged releases at:
-# https://hub.docker.com/r/library/python/tags/
 image: python:latest
 
 # Change pip's cache directory to be inside the project directory since we can
@@ -13,51 +12,59 @@ image: python:latest
 variables:
   PIP_CACHE_DIR: "$CI_PROJECT_DIR/.cache/pip"
 
-# Pip's cache doesn't store the python packages
-# https://pip.pypa.io/en/stable/topics/caching/
-#
-# If you want to also cache the installed packages, you have to install
-# them in a virtualenv and cache it as well.
 cache:
+  # Cache the pip and installed package directories
   paths:
     - .cache/pip
     - venv/
 
-before_script:
-  - python --version  # For debugging
-  - pip install virtualenv
-  - virtualenv venv
-  - source venv/bin/activate
+default:
+  # Scripts that runs before all jobs
+  before_script:
+    - python --version  # For debugging
+    - python -m venv venv
+    - source venv/bin/activate
+    - python -m pip install --upgrade pip
+    - pip install wheel
+    - pip install -r requirements.txt
+
+lint:
+  stage: lint
+  script:
+    - pip install black
+    - black --check src/mt
 
 test:
+  stage: test
   script:
-    - python setup.py test
-    - pip install tox flake8  # you can also use tox
-    - tox -e py36,flake8
+    - python -m unittest discover -s src/mt/tests -p "test_*.py"
 
-run:
-  script:
-    - python setup.py bdist_wheel
-    # an alternative approach is to install and run:
-    - pip install dist/*
-    # run the command here
-  artifacts:
-    paths:
-      - dist/*.whl
+# Only run the build stage if the test stage passes, the branch is main
+# build:
+#   stage: build
+#   script:
+#     - pip install build
+#     - python -m build --wheel
+#   artifacts:
+#     paths:
+#       - dist/*.whl
+#   rules:
+#     - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
 
-pages:
-  script:
-    - pip install sphinx sphinx-rtd-theme
-    - cd doc
-    - make html
-    - mv build/html/ ../public/
-  artifacts:
-    paths:
-      - public
-  rules:
-    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+# pages:
+#   stage: pages
+#   script:
+#     - pip install sphinx sphinx-rtd-theme
+#     - cd doc
+#     - make html
+#     - mv build/html/ ../public/
+#   artifacts:
+#     paths:
+#       - public
+#   rules:
+#     - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
 
-deploy:
-  stage: deploy
-  script: echo "Define your deployment script!"
-  environment: production
+# deploy:
+#   stage: deploy
+#   script: echo "Define your deployment script!"
+#   environment: production
