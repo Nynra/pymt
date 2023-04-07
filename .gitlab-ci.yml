@@ -32,8 +32,8 @@ lint:
   stage: lint
   script:
     - pip install black
-    - black --check src/mt
     - black src/mt/
+    - black --check src/mt
 
 test:
   stage: test
