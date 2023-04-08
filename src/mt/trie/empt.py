@@ -1,10 +1,10 @@
 from .mpt import MPT
-from .exceptions import InvalidReferenceError
+from .exceptions import InvalidReferenceError, KeyNotFoundError
 from .hash import keccak_hash
 import rlp
 from _collections_abc import MutableMapping
 from .proof import Proof
-from typing import Iterable, Union
+from typing import Iterable, Union, Any
 
 
 class DataReference:
@@ -142,6 +142,10 @@ class EMPT(MutableMapping):
                 This mode cannot be used to set or retreive data, it can only be
                 used to validate proofs.
 
+        .. attention::
+            Entries that are are added to the trie should always have a .encode_rlp() and
+            .decode_rlp() method. This is used to generate a data reference in the trie.
+
         Parameters
         ----------
         trie_storage : Storage, optional
@@ -247,6 +251,9 @@ class EMPT(MutableMapping):
         data = self._data_storage[key]
         ref = self._trie.get(key)
         ref = DataReference.decode(ref)
+        if not isinstance(data, (bytes, bytearray)):
+            # Encode if not already bytes
+            data = data.encode_rlp()
         expected = DataReference(key, data)
         if ref != expected:
             raise InvalidReferenceError(
@@ -254,30 +261,42 @@ class EMPT(MutableMapping):
             )
         return data
 
-    # @typechecked
     def get_reference(self, key: bytes) -> DataReference:
         """Return the data reference corresponding with the key."""
         if not isinstance(key, bytes):
             raise TypeError("The key must be type bytes, not {}".format(type(key)))
         return DataReference.decode(self._trie.get(key))
 
-    # @typechecked
-    def update(self, key: bytes, value: bytes) -> ...:
+    def update(self, key: bytes, value: Any) -> ...:
         """
         Set the value of a certain key.
 
         The value is stored in the data storage and a reference is stored in
         the trie.
         """
+        # If the value is bytes or bytearray it does not need to be encoded to
+        # create a reference
+        if not isinstance(value, (bytes, bytearray)):
+            # Check if the value has a .encode_rlp() and .decode_rlp() method
+            if not hasattr(value, "encode_rlp"):
+                raise TypeError(
+                    "The value must have a .encode_rlp() method to encode the data"
+                )
+            if not hasattr(value, "decode_rlp"):
+                raise TypeError(
+                    "The value must have a .decode_rlp() method to decode the data"
+                )
         if not isinstance(key, bytes):
             raise TypeError("The key must be type bytes, not {}".format(type(key)))
-        if not isinstance(value, bytes):
-            raise TypeError("The value must be type bytes, not {}".format(type(value)))
-        ref = DataReference(key, value)
+        
+        # Create a reference, update the trie and add the data to the storage
+        if not isinstance(value, (bytes, bytearray)):
+            ref = DataReference(key, value.encode_rlp())
+        else:
+            ref = DataReference(key, value)
         self._trie.update(key, ref.encode())
         self._data_storage[key] = value
 
-    # @typechecked
     def delete(self, key: bytes) -> ...:
         """
         Delete the value of a certain key.
@@ -287,10 +306,11 @@ class EMPT(MutableMapping):
         """
         if not isinstance(key, bytes):
             raise TypeError("The key must be type bytes, not {}".format(type(key)))
+        if not self._trie.contains(key):
+            raise KeyNotFoundError("The key is not in the trie")
         del self._data_storage[key]
         self._trie.delete(key)
 
-    # @typechecked
     def contains(self, key: bytes) -> bool:
         """
         Check if a certain key is in the storage.
@@ -333,7 +353,6 @@ class EMPT(MutableMapping):
             raise TypeError("The key must be type bytes, not {}".format(type(key)))
         return self._trie.get_proof_of_inclusion(key)
 
-    # @typechecked
     def verify_proof_of_inclusion(self, proof: Proof) -> bool:
         """
         Validate a proof of inclusion.
@@ -344,7 +363,6 @@ class EMPT(MutableMapping):
             raise TypeError("The proof must be type Proof, not {}".format(type(proof)))
         return self._trie.verify_proof_of_inclusion(proof)
 
-    # @typechecked
     def get_proof_of_exclusion(self, key: bytes) -> Proof:
         """
         Get the proof of exclusion for a certain key.
@@ -355,7 +373,6 @@ class EMPT(MutableMapping):
             raise TypeError("The key must be type bytes, not {}".format(type(key)))
         return self._trie.get_proof_of_exclusion(key)
 
-    # @typechecked
     def verify_proof_of_exclusion(self, proof: Proof) -> bool:
         """
         Validate a proof of exclusion.
@@ -407,7 +424,10 @@ class SparseEMPT:
         self._trie = MPT(trie_storage, root, secure=secure)
 
     # DUNDER METHODS
-    # These methods are inherited from the parent but not supported in this class.
+    def __getitem__(self, key: bytes) -> ...:
+        """Wrapper for the get method."""
+        raise TypeError("The data is not stored in the SparseEMPT so getting values is not possible.")
+
     def __setitem__(self, key: bytes, value: bytes) -> ...:
         """Wrapper for the update method."""
         self.update(key, value)
@@ -449,8 +469,7 @@ class SparseEMPT:
             raise TypeError("The key must be type bytes, not {}".format(type(key)))
         return DataReference.decode(self._trie.get(key))
 
-    # @typechecked
-    def update(self, key: bytes, value: bytes) -> ...:
+    def update(self, key: bytes, value: Any) -> ...:
         """
         Set the value of a certain key.
 
@@ -460,10 +479,23 @@ class SparseEMPT:
             Because this is a sparse trie the data will not be stored,
             only the reference to the data.
         """
+        if not isinstance(value, (bytes, bytearray)):
+            if not callable(value.encode_rlp):
+                raise TypeError(
+                    "The value must be type bytes, bytearray or have an encode_rlp method, not {}".format(
+                        type(value)
+                    )
+                )
+            if not callable(value.decode_rlp):
+                raise TypeError(
+                    "The value must be type bytes, bytearray or have a decode_rlp method, not {}".format(
+                        type(value)
+                    )
+                )
+            value = value.encode_rlp()
+
         if not isinstance(key, bytes):
             raise TypeError("The key must be type bytes, not {}".format(type(key)))
-        if not isinstance(value, bytes):
-            raise TypeError("The value must be type bytes, not {}".format(type(value)))
         ref = DataReference(key, value)
         self._trie.update(key, ref.encode())
 
@@ -475,6 +507,8 @@ class SparseEMPT:
         """
         if not isinstance(key, bytes):
             raise TypeError("The key must be type bytes, not {}".format(type(key)))
+        if not self._trie.contains(key):
+            raise KeyNotFoundError("The key is not in the trie")
         self._trie.delete(key)
 
     def contains(self, key: bytes) -> bool:
