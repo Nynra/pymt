@@ -253,8 +253,9 @@ class EMPT(MutableMapping):
         ref = DataReference.decode(ref)
         if not isinstance(data, (bytes, bytearray)):
             # Encode if not already bytes
-            data = data.encode_rlp()
-        expected = DataReference(key, data)
+            expected = DataReference(key, data.encode_rlp())
+        else:
+            expected = DataReference(key, data)
         if ref != expected:
             raise InvalidReferenceError(
                 "The reference does not match the expected data"
@@ -279,11 +280,11 @@ class EMPT(MutableMapping):
         if not isinstance(value, (bytes, bytearray)):
             # Check if the value has a .encode_rlp() and .decode_rlp() method
             if not hasattr(value, "encode_rlp"):
-                raise TypeError(
+                raise NotImplementedError(
                     "The value must have a .encode_rlp() method to encode the data"
                 )
             if not hasattr(value, "decode_rlp"):
-                raise TypeError(
+                raise NotImplementedError(
                     "The value must have a .decode_rlp() method to decode the data"
                 )
         if not isinstance(key, bytes):
@@ -480,14 +481,14 @@ class SparseEMPT:
             only the reference to the data.
         """
         if not isinstance(value, (bytes, bytearray)):
-            if not callable(value.encode_rlp):
-                raise TypeError(
+            if not hasattr(value.encode_rlp):
+                raise NotImplementedError(
                     "The value must be type bytes, bytearray or have an encode_rlp method, not {}".format(
                         type(value)
                     )
                 )
-            if not callable(value.decode_rlp):
-                raise TypeError(
+            if not hasattr(value.decode_rlp):
+                raise NotImplementedError(
                     "The value must be type bytes, bytearray or have a decode_rlp method, not {}".format(
                         type(value)
                     )

@@ -10,6 +10,7 @@ from trie.exceptions import KeyNotFoundError
 from trie.hash import keccak_hash
 import rlp
 import unittest
+from unittest.mock import MagicMock
 import random
 import copy
 
@@ -91,6 +92,18 @@ class TestFullEmptNonSecure(unittest.TestCase, ProofOfInclusion, ProofOfExclusio
         ref = DataReference(key, value)
         self.assertEqual(self.trie.get_reference(key), ref)
 
+    def test_get_insert_one_short_non_bytes(self):
+        test = MagicMock()
+        test.encode_rlp.return_value = b"test"
+        test.decode_rlp.return_value = test
+
+        self.trie.update(b'key1', test)
+        test.encode_rlp.assert_called_once()
+        self.assertIsInstance(self.trie.get(b'key1'), MagicMock)
+
+        with self.assertRaises(NotImplementedError):
+            self.trie.update(b'key2', 2)
+
     def test_insert_get_one_long(self):
         """Test inserting one long key-value pair and then getting it."""
         key = rlp.encode(
@@ -122,6 +135,24 @@ class TestFullEmptNonSecure(unittest.TestCase, ProofOfInclusion, ProofOfExclusio
             ref = DataReference(k, v)
             self.assertEqual(self.trie.get_reference(k), ref)
 
+    def test_get_insert_get_many_non_bytes(self):
+        data = []
+        for i in range(5):
+            x = MagicMock()
+            x.encode_rlp.return_value = str(i).encode()
+            x.decode_rlp.return_value = x
+            data.append(x)
+
+        for cnt, i in enumerate(data):
+            self.trie.update(str(cnt).encode(), i)
+            i.encode_rlp.assert_called_once()
+        
+        for cnt, i in enumerate(data):
+            self.assertIsInstance(self.trie.get(str(cnt).encode()), MagicMock)
+
+        with self.assertRaises(NotImplementedError):
+            self.trie.update(b'key2', 2)
+
     def test_insert_get_lots(self):
         """Test inserting lots of key-value pairs and then getting them."""
         random.seed(42)
@@ -135,6 +166,24 @@ class TestFullEmptNonSecure(unittest.TestCase, ProofOfInclusion, ProofOfExclusio
             self.assertEqual(self.trie.get(kv), kv * 2)
             ref = DataReference(kv, kv * 2)
             self.assertEqual(self.trie.get_reference(kv), ref)
+
+    def test_get_insert_get_lots_non_bytes(self):
+        data = []
+        for i in range(100):
+            x = MagicMock()
+            x.encode_rlp.return_value = str(i).encode()
+            x.decode_rlp.return_value = x
+            data.append(x)
+
+        for cnt, i in enumerate(data):
+            self.trie.update(str(cnt).encode(), i)
+            i.encode_rlp.assert_called_once()
+        
+        for cnt, i in enumerate(data):
+            self.assertIsInstance(self.trie.get(str(cnt).encode()), MagicMock)
+
+        with self.assertRaises(NotImplementedError):
+            self.trie.update(b'key2', 2)
 
     def test_delete_one(self):
         """Test deleting one key-value pair and then getting it."""
