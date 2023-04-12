@@ -124,7 +124,7 @@ class EMPT(MutableMapping):
         secure: bool = False,
     ) -> ...:
         """
-        Initiate the StorageMMPT.
+        Initiate the EMPT.
 
         The trie can be used in three different modes:
         - FULL: The data is stored in the data storage and the reference is
@@ -133,13 +133,13 @@ class EMPT(MutableMapping):
                     is still stored in the trie.
 
             .. note::
-                This mode cannot be used to retreive data, but it can still create
+                This mode cannot be used to retrieve data, but it can still create
                 and validate proofs
 
         - ROOT: The data is not stored in either the data storage or the trie.
 
             .. note::
-                This mode cannot be used to set or retreive data, it can only be
+                This mode cannot be used to set or retrieve data, it can only be
                 used to validate proofs.
 
         .. attention::
@@ -274,6 +274,12 @@ class EMPT(MutableMapping):
 
         The value is stored in the data storage and a reference is stored in
         the trie.
+
+        Parameters
+        ----------
+        key : bytes
+            The key of the value. This can be bytes, bytearray or an object
+            that has a .encode_rlp() and .decode_rlp() method.
         """
         # If the value is bytes or bytearray it does not need to be encoded to
         # create a reference
@@ -328,6 +334,11 @@ class EMPT(MutableMapping):
         Get the root trie.
 
         The root trie is a trie that only contains the root of the trie.
+
+        Returns
+        -------
+        RootEMPT
+            A RootEMPT object that contains the root of the trie.
         """
         return RootEMPT(mode=b"ROOT", secure=self._trie.secure, root=self._trie.root())
 
@@ -336,6 +347,11 @@ class EMPT(MutableMapping):
         Get the sparse trie.
 
         The sparse trie is a trie that only contains the references of the trie.
+
+        Returns
+        -------
+        SparseEMPT
+            A SparseEMPT object that contains the references of the trie.
         """
         return SparseEMPT(
             trie_storage=self._trie._storage,
@@ -389,8 +405,8 @@ class SparseEMPT:
     """
     The sparse storage EMPT.
 
-    This class is not much more than a wrapper around the :class:`MPT` class. It
-    implements the same methods as the :class:`MPT` class but it stores references
+    This class is not much more than a wrapper for the EMPT class. It
+    implements the same methods as the EMPT class but it stores references
     to the data instead of the data itself. This means that the data is not
     stored in the trie and cannot be retrieved, the data reference can still
     be retrieved.
@@ -479,6 +495,14 @@ class SparseEMPT:
         .. note::
             Because this is a sparse trie the data will not be stored,
             only the reference to the data.
+
+        Parameters
+        ----------
+        key : bytes
+            The key of the value.
+        value : Any
+            The value to store. The value must be type bytes, bytearray or
+            have a .encode_rlp() and .decode_rlp() method.
         """
         if not isinstance(value, (bytes, bytearray)):
             if not hasattr(value.encode_rlp):
@@ -566,15 +590,15 @@ class SparseEMPT:
 
 class RootEMPT:
     """
-    The root storage MMPT.
+    The root storage EMPT.
 
-    This class is not much more than a wrapper around the MMPT class. It
+    This class is not much more than a wrapper around the EMPT class. It
     uses the trie root to validate proofs of inclusion and exclusion.
     """
 
     def __init__(self, root: bytes, secure: bool = False) -> ...:
         """
-        Initialize the root storage MMPT.
+        Initialize the root storage EMPT.
 
         Parameters
         ----------

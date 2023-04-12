@@ -22,6 +22,8 @@ class MerkleTools(object):
         ----------
         hash_type : str
             The hash function to use. Can be "sha256" or "sha3"
+        secure : bool
+            If True, use the hash function to hash the leaves before adding them to the tree.
         """
         hash_type = hash_type.lower()
         if hash_type in [
@@ -113,7 +115,17 @@ class MerkleTools(object):
         self.leaves.append(value)
 
     def get_leaf(self, index: int) -> str:
-        """Get the leaf value at the given index."""
+        """
+        Get the leaf value at the given index.
+        
+        Parameters
+        ----------
+        index : int
+
+        Returns
+        -------
+        str
+        """
         return self._to_hex(self.leaves[index])
 
     def get_leaf_count(self) -> int:
@@ -156,11 +168,6 @@ class MerkleTools(object):
         """
         Get the Merkle root of the tree.
 
-        Raises
-        ------
-        ValueError
-            If the tree is not ready.
-
         Returns
         -------
         str
@@ -178,20 +185,10 @@ class MerkleTools(object):
         key : bytes
             The key to get the proof for.
 
-        Raises
-        ------
-        ValueError
-            If the tree is not ready or the index is out of range.
-
         Returns
         -------
         list
             The proof for the leaf at the given index.
-
-        Raises
-        ------
-        ValueError
-            If the tree is not ready or the index is out of range.
         """
         if self._secure:
             key = self.hash_function(key).hexdigest()
