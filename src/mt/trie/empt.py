@@ -29,7 +29,6 @@ class DataReference:
         if not isinstance(key, bytes):
             raise TypeError("key must be bytes, not {}".format(type(key)))
         self._key = key
-
         if not isinstance(data, bytes):
             raise TypeError("data must be bytes, not {}".format(type(data)))
         self._data = data

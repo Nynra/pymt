@@ -20,6 +20,30 @@ except ImportError:
     from test_mpt import ProofOfExclusion, ProofOfInclusion
 
 
+class DummyDataClass:
+    """
+    Class that is used to test the capability to reference and save rlp encodable objects.
+    """
+
+    def __init__(self, key : bytes, data : bytes) -> ...:
+        if not isinstance(key, bytes):
+            raise TypeError("key must be of type bytes")
+        if not isinstance(data, bytes):
+            raise TypeError("data must be of type bytes")
+        self.data = data
+        self.key = key
+
+    def encode_rlp(self) -> bytes:
+        return rlp.encode([self.key, self.data])
+    
+    @staticmethod
+    def decode_rlp(encoded : bytes) -> "DummyDataClass":
+        if not isinstance(encoded, bytes):
+            raise TypeError("encoded must be of type bytes")
+        key, data = rlp.decode(encoded)
+        return DummyDataClass(key, data)
+    
+
 class TestDataReference(unittest.TestCase):
     def test_equals(self):
         key = b"key"
@@ -92,6 +116,29 @@ class TestFullEmptNonSecure(unittest.TestCase, ProofOfInclusion, ProofOfExclusio
         ref = DataReference(key, value)
         self.assertEqual(self.trie.get_reference(key), ref)
 
+    def test_insert_get_one_rlp_encodable(self):
+        data = DummyDataClass(b"key", b"value")
+        self.trie.update(data.key, data)
+
+        gotten_value = self.trie.get(data.key)
+        self.assertIsInstance(gotten_value, DummyDataClass)
+        self.assertEqual(gotten_value.key, data.key)
+
+    def test_update_one_rlp_encodable(self):
+        data = DummyDataClass(b"key", b"value")
+        self.trie.update(data.key, data)
+
+        gotten_value = self.trie.get(data.key)
+        self.assertIsInstance(gotten_value, DummyDataClass)
+        self.assertEqual(gotten_value.key, data.key)
+
+        data2 = DummyDataClass(b"key", b"other value")
+        self.trie.update(data2.key, data2)
+
+        gotten_value = self.trie.get(data.key)
+        self.assertIsInstance(gotten_value, DummyDataClass)
+        self.assertEqual(gotten_value.key, data2.key)
+
     def test_get_insert_one_short_non_bytes(self):
         test = MagicMock()
         test.encode_rlp.return_value = b"test"
@@ -135,6 +182,20 @@ class TestFullEmptNonSecure(unittest.TestCase, ProofOfInclusion, ProofOfExclusio
             ref = DataReference(k, v)
             self.assertEqual(self.trie.get_reference(k), ref)
 
+    def test_insert_get_many_rlp_encodable(self):
+        data = []
+        for i in range(5):
+            x = DummyDataClass(b"key" + str(i).encode(), b"value" + str(i).encode())
+            data.append(x)
+
+        for i in data:
+            self.trie.update(i.key, i)
+
+        for i in data:
+            gotten_value = self.trie.get(i.key)
+            self.assertIsInstance(gotten_value, DummyDataClass)
+            self.assertEqual(gotten_value.key, i.key)
+
     def test_get_insert_get_many_non_bytes(self):
         data = []
         for i in range(5):
@@ -167,6 +228,19 @@ class TestFullEmptNonSecure(unittest.TestCase, ProofOfInclusion, ProofOfExclusio
             ref = DataReference(kv, kv * 2)
             self.assertEqual(self.trie.get_reference(kv), ref)
 
+    def test_insert_get_lots_rlp_encodable(self):
+        random.seed(42)
+        rand_numbers = [random.randint(1, 1000000) for _ in range(100)]
+        keys = list(map(lambda x: bytes("{}".format(x), "utf-8"), rand_numbers))
+
+        for kv in keys:
+            self.trie.update(kv, DummyDataClass(bytes(kv), (kv * 2)))
+
+        for kv in keys:
+            gotten_value = self.trie.get(kv)
+            self.assertIsInstance(gotten_value, DummyDataClass)
+            self.assertEqual(gotten_value.key, kv)
+
     def test_get_insert_get_lots_non_bytes(self):
         data = []
         for i in range(100):
@@ -194,6 +268,20 @@ class TestFullEmptNonSecure(unittest.TestCase, ProofOfInclusion, ProofOfExclusio
         with self.assertRaises(KeyError):
             self.trie.get(b"key")
 
+        self.assertEqual(self.trie.get(b"do"), b"verb")
+
+    def test_delete_one_rlp_encodable(self):
+        entry1 = DummyDataClass(b"key1", b"value1")
+        entry2 = DummyDataClass(b"key2", b"value2")
+        self.trie.update(entry1.key, entry1)
+        self.trie.update(entry2.key, entry2)
+        self.trie.delete(entry1.key)
+
+        with self.assertRaises(KeyError):
+            self.trie.get(entry1.key)
+
+        self.assertEqual(self.trie.get(entry2.key), entry2)
+
     def test_delete_many(self):
         """Test deleting many key-value pairs and then getting them."""
         self.trie.update(b"do", b"verb")
@@ -215,6 +303,33 @@ class TestFullEmptNonSecure(unittest.TestCase, ProofOfInclusion, ProofOfExclusio
 
         self.assertEqual(root_hash, new_root_hash)
 
+    def test_delete_many_rlp_encodable(self):
+        entry1 = DummyDataClass(b"key1", b"value1")
+        entry2 = DummyDataClass(b"key2", b"value2")
+        entry3 = DummyDataClass(b"key3", b"value3")
+        entry4 = DummyDataClass(b"key4", b"value4")
+        self.trie.update(entry1.key, entry1)
+        self.trie.update(entry2.key, entry2)
+        self.trie.update(entry3.key, entry3)
+        self.trie.update(entry4.key, entry4)
+
+        root_hash = self.trie.root_hash()
+
+        entry5 = DummyDataClass(b"key5", b"value5")
+        entry6 = DummyDataClass(b"key6", b"value6")
+        entry7 = DummyDataClass(b"key7", b"value7")
+        self.trie.update(entry5.key, entry5)
+        self.trie.update(entry6.key, entry6)
+        self.trie.update(entry7.key, entry7)
+
+        self.trie.delete(entry5.key)
+        self.trie.delete(entry6.key)
+        self.trie.delete(entry7.key)
+
+        new_root_hash = self.trie.root_hash()
+
+        self.assertEqual(root_hash, new_root_hash)
+
     def test_delete_lots(self):
         """Test deleting lots of key-value pairs and then getting them."""
         random.seed(42)
@@ -228,6 +343,25 @@ class TestFullEmptNonSecure(unittest.TestCase, ProofOfInclusion, ProofOfExclusio
 
         for kv in keys:
             self.trie.delete(kv)
+
+        self.assertEqual(self.trie.root_hash(), Node.EMPTY_HASH)
+
+    def test_delete_lots_rlp_encodable(self):
+        random.seed(42)
+        rand_numbers = set(
+            [random.randint(1, 1000000) for _ in range(100)]
+        )
+
+        data = []
+        for i in rand_numbers:
+            x = DummyDataClass(str(i).encode(), str(i * 2).encode())
+            data.append(x)
+
+        for kv in data:
+            self.trie.update(kv.key, kv)
+
+        for kv in data:
+            self.trie.delete(kv.key)
 
         self.assertEqual(self.trie.root_hash(), Node.EMPTY_HASH)
 
