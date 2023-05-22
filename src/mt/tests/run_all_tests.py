@@ -3,7 +3,6 @@ from .test_mpt import *
 from .test_empt import *
 from .test_utils import *
 from .test_vectors import *
-from .test_merkle_tools import *
 from .test_mt import *
 
 
