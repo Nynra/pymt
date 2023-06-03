@@ -2,6 +2,7 @@ from .empt import DataReference, EMPT, SparseEMPT, RootEMPT
 from .hash import keccak_hash, keccak_hash_list
 from .mpt import MPT
 from .mt import MerkleTree
+from .proof import Proof
 
 __all__ = [
     "DataReference",
@@ -12,4 +13,5 @@ __all__ = [
     "keccak_hash_list",
     "MPT",
     "MerkleTree",
+    "Proof",
 ]
