@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "pymt"
-version = "0.0.6"
+version = "0.0.7"
 description = "A module for Merkle Tries and proofs."
 authors = [{name = "Nynra", email="nynradev@pm.me"}]
 readme = "README.md"
