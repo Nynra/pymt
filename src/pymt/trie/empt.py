@@ -586,6 +586,18 @@ class SparseEMPT:
             raise TypeError("The proof must be type Proof, not {}".format(type(proof)))
         return self._trie.verify_proof_of_exclusion(proof)
 
+    def encode_rlp(self) -> bytes:
+        """Encode the trie to rlp."""
+        return self._trie.encode()
+    
+    @staticmethod
+    def decode_rlp(data: bytes) -> "SparseEMPT":
+        """Decode the trie from rlp."""
+        mpt = MPT.decode(data)
+        smpt = SparseEMPT()
+        smpt._trie = mpt
+        return smpt
+
 
 class RootEMPT:
     """
@@ -608,6 +620,16 @@ class RootEMPT:
         """
         self._trie = MPT({}, root, secure=secure)
 
+    # PROPERTIES
+    @property
+    def secure(self) -> bool:
+        """Return whether the trie is secure or not."""
+        return self._trie.secure
+    
+    def root_hash(self) -> bytes:
+        """Return the hash of the root of the trie."""
+        return self._trie.root_hash()
+
     # PROOF VALIDATION METHODS
     def verify_proof_of_inclusion(self, proof: Proof) -> bool:
         """
@@ -628,3 +650,15 @@ class RootEMPT:
         if not isinstance(proof, Proof):
             raise TypeError("The proof must be type Proof, not {}".format(type(proof)))
         return self._trie.verify_proof_of_exclusion(proof)
+    
+    def encode_rlp(self) -> bytes:
+        """Encode the trie to rlp."""
+        return self._trie.encode()
+    
+    @staticmethod
+    def decode_rlp(data: bytes) -> "RootEMPT":
+        """Decode the trie from rlp."""
+        mpt = MPT.decode(data)
+        rmpt = RootEMPT(mpt.root())
+        rmpt._trie = mpt
+        return rmpt

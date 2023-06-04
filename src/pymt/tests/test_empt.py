@@ -688,6 +688,21 @@ class TestSparseEmptNonSecure(unittest.TestCase, ProofOfInclusion, ProofOfExclus
         self.trie = SparseEMPT(trie_storage={})
         return super().test_poe_proof_on_empty_trie()
 
+    def test_encode_decode_rlp(self):
+        data = {
+            b"do": b"verb",
+            b"dog": b"puppy",
+            b"doge": b"coin",
+        }
+        for k, v in data.items():
+            self.trie.update(k, v)
+        encoded = self.trie.encode_rlp()
+        expected = self.trie._trie.encode()
+        self.assertEqual(encoded, expected)
+
+        decoded = SparseEMPT.decode_rlp(encoded)
+        self.assertEqual(decoded.root_hash(), self.trie.root_hash())
+
 
 class TestSparseEmptSecure(TestSparseEmptNonSecure):
     ROOT_HASH = "14b986c52c285e80583ffbd8683e2218211c99f089b2534c7dc474925af13276"
@@ -766,6 +781,15 @@ class TestRootEmptNonSecure(unittest.TestCase):
 
         poe = self.full_trie.get_proof_of_exclusion(self.non_data[0][0])
         self.assertFalse(self.trie.verify_proof_of_exclusion(poe))
+
+    def test_encode_decode_rlp(self):
+        encoded = self.trie.encode_rlp()
+        expected = self.trie._trie.encode()
+
+        self.assertEqual(encoded, expected)
+
+        decoded = RootEMPT.decode_rlp(encoded)
+        self.assertEqual(decoded.root_hash(), self.trie.root_hash())
 
 
 class TestRootEmptSecure(TestRootEmptNonSecure):
