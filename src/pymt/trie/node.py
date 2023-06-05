@@ -4,7 +4,7 @@ from .hash import keccak_hash
 from typing import List, Union, Tuple, Optional
 
 
-def _prepare_reference_for_usage(ref: bytes) -> bytes:
+def _prepare_reference_for_usage(ref: Union[list, bytes]) -> bytes:
     """
     Encode the reference into RLP if needed so stored references will appear as bytes.
 
@@ -19,13 +19,15 @@ def _prepare_reference_for_usage(ref: bytes) -> bytes:
         Encoded reference.
 
     """
+    if not isinstance(ref, (list, bytes, bytearray)):
+        raise TypeError("Reference must be list, bytes or bytearray")
     if isinstance(ref, list):
         return rlp.encode(ref)
 
     return ref
 
 
-def _prepare_reference_for_encoding(ref: bytes) -> bytes:
+def _prepare_reference_for_encoding(ref: "Node") -> bytes:
     """
     Decode the RLP-encoded reference if needed so the full node will be encoded correctly.
 
@@ -39,7 +41,7 @@ def _prepare_reference_for_encoding(ref: bytes) -> bytes:
     bytes or bytearray
         Decoded reference.
 
-    """
+    """ 
     if 0 < len(ref) < 32:
         return rlp.decode(ref)
 
@@ -70,6 +72,11 @@ class Node:
         Node
             Decoded node.
         """
+        if not isinstance(encoded_data, (bytes, bytearray)):
+            raise TypeError("Encoded data must be bytes or bytearray, not {}".format(type(encoded_data)))
+        if not isinstance(include_data, bool):
+            raise TypeError("Include data must be bool, not {}".format(type(include_data)))
+        
         data = rlp.decode(encoded_data)
 
         assert len(data) == 17 or len(data) == 2  # TODO #1 throw exception
@@ -119,6 +126,9 @@ class Node:
         bytes or bytearray
 
         """
+        if not isinstance(node, Node):
+            raise TypeError("Node must be Node, not {}".format(type(node)))
+        
         encoded_node = node.encode()
         if len(encoded_node) < 32:
             return encoded_node
@@ -157,6 +167,10 @@ class Leaf(Node):
         data : bytes
             Data to store.
         """
+        if not isinstance(path, NibblePath):
+            raise TypeError("Path must be NibblePath, not {}".format(type(path)))
+        if not isinstance(data, (bytes, bytearray)):
+            raise TypeError("Data must be bytes or bytearray, not {}".format(type(data)))
         self.path = path
         self.data = data
 
@@ -170,6 +184,8 @@ class Leaf(Node):
             Encoded leaf.
 
         """
+        if not isinstance(include_data, bool):
+            raise TypeError("Include data must be bool, not {}".format(type(include_data)))
         if include_data:
             return rlp.encode([self.path.encode(True), self.data])
         else:
@@ -196,7 +212,7 @@ class Extension(Node):
 
     """
 
-    def __init__(self, path, next_ref):
+    def __init__(self, path: "NibblePath", next_ref: bytes) -> ...:
         """
         Initializes the extension.
 
@@ -207,6 +223,10 @@ class Extension(Node):
         next_ref : bytes or bytearray
             Reference to the next node.
         """
+        if not isinstance(path, NibblePath):
+            raise TypeError("Path must be NibblePath, not {}".format(type(path)))
+        if not isinstance(next_ref, (bytes, bytearray)):
+            raise TypeError("Next ref must be bytes or bytearray, not {}".format(type(next_ref)))
         self.path = path
         self.next_ref = next_ref
 
@@ -224,6 +244,9 @@ class Extension(Node):
         bytes
             Encoded extension.
         """
+        if not isinstance(include_data, bool):
+            raise TypeError("Include data must be bool, not {}".format(type(include_data)))
+        
         next_ref = _prepare_reference_for_encoding(self.next_ref)
         if include_data:
             return rlp.encode([self.path.encode(False), next_ref])
@@ -250,6 +273,14 @@ class Branch(Node):
         data : bytes or bytearray
             Data to store.
         """
+        if not isinstance(branches, list):
+            raise TypeError("Branches must be list, not {}".format(type(branches)))
+        for branch in branches:
+            if not isinstance(branch, (bytes, bytearray)):
+                raise TypeError("Branch must be bytes or bytearray, not {}".format(type(branch)))
+        if not isinstance(data, (bytes, bytearray)) and data is not None:
+            raise TypeError("Data must be bytes or bytearray, not {}".format(type(data)))
+        
         self.branches = branches
         if data is None:
             self.data = b""
@@ -265,6 +296,8 @@ class Branch(Node):
         bytes
             Encoded branch.
         """
+        if not isinstance(include_data, bool):
+            raise TypeError("Include data must be bool, not {}".format(type(include_data)))
         branches = list(map(_prepare_reference_for_encoding, self.branches))
         if include_data:
             return rlp.encode(branches + [self.data])
