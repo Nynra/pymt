@@ -125,9 +125,11 @@ class TestFullEmptNonSecure(unittest.TestCase, ProofOfInclusion, ProofOfExclusio
         self.assertEqual(gotten_value.key, data.key)
 
     def test_update_one_rlp_encodable(self):
+        # Add some data
         data = DummyDataClass(b"key", b"value")
         self.trie.update(data.key, data)
 
+        # Check if it is there
         gotten_value = self.trie.get(data.key)
         self.assertIsInstance(gotten_value, DummyDataClass)
         self.assertEqual(gotten_value.key, data.key)
@@ -378,6 +380,7 @@ class TestFullEmptNonSecure(unittest.TestCase, ProofOfInclusion, ProofOfExclusio
 
     def test_root_hash_after_updates(self):
         """Test getting the root hash of a trie after updates."""
+        starting_root = self.trie.root_hash()
         data = (
             (b"do", b"verb"),
             (b"dog", b"puppy"),
@@ -392,7 +395,17 @@ class TestFullEmptNonSecure(unittest.TestCase, ProofOfInclusion, ProofOfExclusio
 
         root_hash = self.trie.root_hash()
 
+        self.assertNotEqual(root_hash.hex(), starting_root.hex())
         self.assertEqual(root_hash.hex(), self.ROOT_HASH_AFTER_UPDATES)
+
+        # Make some more updates and check if the root
+        # changes again
+        self.trie.update(b"do", b"not_a_verb")
+        self.trie.update(b"dog", b"not_a_puppy")
+
+        root_hash = self.trie.root_hash()
+        self.assertNotEqual(root_hash.hex(), self.ROOT_HASH_AFTER_UPDATES)
+        self.assertNotEqual(root_hash.hex(), starting_root.hex())
 
     def test_root_hash_after_deletes(self):
         """Test getting the root hash of a trie after deletes."""
@@ -473,6 +486,24 @@ class TestFullEmptNonSecure(unittest.TestCase, ProofOfInclusion, ProofOfExclusio
         self.assertFalse(self.trie.contains(b"doge"))
         self.assertFalse(self.trie.contains(b"horse"))
 
+    def test_get_root_trie(self):
+        """Test getting the root tree of a trie."""
+        self.trie.update(b"do", b"verb")
+        self.trie.update(b"dog", b"puppy")
+
+        root_node = self.trie.get_root_trie()
+        self.assertIsInstance(root_node, RootEMPT)
+        self.assertEqual(root_node.root_hash(), self.trie.root_hash())
+
+    def test_get_sparse_trie(self):
+        """Test getting the sparse tree of a trie."""
+        self.trie.update(b"do", b"verb")
+        self.trie.update(b"dog", b"puppy")
+
+        sparse_node = self.trie.get_sparse_trie()
+        self.assertIsInstance(sparse_node, SparseEMPT)
+        self.assertEqual(sparse_node.root_hash(), self.trie.root_hash())
+
 
 class TestFullEmptSecure(TestFullEmptNonSecure):
     ROOT_HASH = "14b986c52c285e80583ffbd8683e2218211c99f089b2534c7dc474925af13276"
@@ -501,11 +532,13 @@ class TestSparseEmptNonSecure(unittest.TestCase, ProofOfInclusion, ProofOfExclus
         "0c3b843aeb53187e821416668635a9ac454579486ad1b06bd16a57b06ebfb9b0"
     )
 
-    @classmethod
-    def setUpClass(cls):
-        cls.storage = {}
-        trie = EMPT(data_storage={}, trie_storage=cls.storage)
-        cls.data = (
+
+    def _add_data(self):
+        for k, v in self.data:
+            self.trie.update(k, v)
+
+    def setUp(self):
+        self.data = (
             (b"digeridoo", b"instrument"),
             (b"bike", b"vehicle"),
             (b"car", b"vehicle"),
@@ -513,15 +546,9 @@ class TestSparseEmptNonSecure(unittest.TestCase, ProofOfInclusion, ProofOfExclus
             (b"sandwitch", b"food"),
             (b"icecream", b"food"),
         )
-        for k, v in cls.data:
-            trie.update(k, v)
 
-        cls.source_root = trie.root()
-
-    def setUp(self):
-        storage = copy.deepcopy(self.storage)
-        root = copy.deepcopy(self.source_root)
-        self.trie = SparseEMPT(trie_storage=storage, root=root)
+        self.trie = SparseEMPT(trie_storage={})
+        self._add_data()
 
     def test_insert_get_one_short(self):
         key = b"king"
@@ -702,6 +729,15 @@ class TestSparseEmptNonSecure(unittest.TestCase, ProofOfInclusion, ProofOfExclus
 
         decoded = SparseEMPT.decode_rlp(encoded)
         self.assertEqual(decoded.root_hash(), self.trie.root_hash())
+
+    def test_encode_decode_rlp_empty_tree(self):
+        trie = SparseEMPT(trie_storage={})
+        encoded = trie.encode_rlp()
+        expected = trie._trie.encode()
+        self.assertEqual(encoded, expected)
+
+        decoded = SparseEMPT.decode_rlp(encoded)
+        self.assertEqual(decoded.root_hash(), trie.root_hash())
 
 
 class TestSparseEmptSecure(TestSparseEmptNonSecure):

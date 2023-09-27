@@ -68,11 +68,17 @@ class MPT:
             (Optional) In secure mode all the keys are hashed using keccak256 internally.
         """
         self._storage = storage
-        if root == ...:
-            self._root = None
+        if root == ... or root is None:
+            self._root = Node.EMPTY_HASH
         else:
             self._root = root
         self._secure = secure
+
+    # PROPERTIES
+    @property
+    def secure(self) -> bool:
+        """Return True if trie is in secure mode."""
+        return self._secure
 
     # DUNDER METHODS
     def __len__(self) -> int:
@@ -244,7 +250,7 @@ class MPT:
             KeyError is raised if there is no value assotiated with provided key.
         """
 
-        if self._root is None:
+        if self._root is None or self._root == Node.EMPTY_HASH:
             raise ValueError("Trie is empty")
 
         if self._secure:
@@ -289,7 +295,7 @@ class MPT:
         ValueError
             ValueError is raised if the trie is empty.
         """
-        if self._root is None:
+        if self._root is None or self._root == Node.EMPTY_HASH:
             raise ValueError("Cannot generate a proof for empty trie")
 
         if self._secure:
@@ -328,7 +334,7 @@ class MPT:
         """
         if proof.type != b"MPT-POI":
             raise TypeError("The given proof is not a proof of inclusion.")
-        if self._root is None:
+        if self._root is None or self._root == Node.EMPTY_HASH:
             raise ValueError("Cannot verify a proof for empty trie.")
 
         # Compare the root hashes
@@ -379,7 +385,7 @@ class MPT:
         PoeError
             PoeError is raised if the key is in the trie.
         """
-        if self._root is None:
+        if self._root is None or self._root == Node.EMPTY_HASH:
             raise ValueError("Cannot generate a proof for empty trie")
 
         # Check if the key is in the trie
@@ -393,7 +399,7 @@ class MPT:
         node, proof_list = self._get_proof_of_exclusion(self._root, path, [])
 
         # Add a leaf node with the key to the proof
-        proof_list.append(Leaf(path, "null").encode())
+        proof_list.append(Leaf(path, b"null").encode())
 
         # If the node is a branch check if i thas a value
         # Can be None or b'' (b'' is used when trie is in secure mode)
@@ -442,7 +448,7 @@ class MPT:
         if proof.type != b"MPT-POE":
             raise TypeError("The given proof is not a proof of exclusion.")
 
-        if self._root is None:
+        if self._root is None or self._root == Node.EMPTY_HASH:
             raise ValueError("Cannot verify a proof for empty trie")
 
         # Compare the root hashes
@@ -630,6 +636,9 @@ class MPT:
         The main contains method will check if this node has a value, and
         if this value is the one we're looking for.
         """
+        if self._root is None or self._root == Node.EMPTY_HASH:
+            return False
+        
         node = self._get_node(node_ref)
 
         # If path is empty, our travel is over. Main `get` method
@@ -1025,7 +1034,7 @@ class MPT:
         KeyError
             KeyError is raised if there is no value assotiated with provided key.
         """
-        if not node_ref:
+        if not node_ref or node_ref == Node.EMPTY_HASH:
             return self._store_node(Leaf(path, value))
 
         node = self._get_node(node_ref)

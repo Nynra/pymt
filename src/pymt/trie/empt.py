@@ -339,7 +339,7 @@ class EMPT(MutableMapping):
         RootEMPT
             A RootEMPT object that contains the root of the trie.
         """
-        return RootEMPT(mode=b"ROOT", secure=self._trie.secure, root=self._trie.root())
+        return RootEMPT(secure=self._trie.secure, root=self._trie.root())
 
     def get_sparse_trie(self) -> "SparseEMPT":
         """
@@ -352,8 +352,13 @@ class EMPT(MutableMapping):
         SparseEMPT
             A SparseEMPT object that contains the references of the trie.
         """
+        # Create a copy of the trie storage in dict format
+        storage_copy = {}
+        for key in self._trie._storage.keys():
+            storage_copy[key] = self._trie._storage[key]
+
         return SparseEMPT(
-            trie_storage=self._trie._storage,
+            trie_storage=storage_copy,
             secure=self._trie.secure,
             root=self._trie.root(),
         )
@@ -599,6 +604,10 @@ class SparseEMPT:
         return smpt
 
 
+class SEMPT(SparseEMPT):
+
+    pass
+
 class RootEMPT:
     """
     The root storage EMPT.
@@ -662,3 +671,8 @@ class RootEMPT:
         rmpt = RootEMPT(mpt.root())
         rmpt._trie = mpt
         return rmpt
+
+
+class REMPT(RootEMPT):
+
+    pass

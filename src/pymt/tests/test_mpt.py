@@ -91,7 +91,7 @@ class ProofOfExclusion:
         self.assertEqual(
             proof.trie_root,
             self.trie.root_hash(),
-            "The root hash in the proof does not mathc the self.trie root.",
+            "The root hash in the proof does not match the self.trie root.",
         )
 
     def test_poe_proof_on_existing_key(self):

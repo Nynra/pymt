@@ -42,6 +42,9 @@ def _prepare_reference_for_encoding(ref: "Node") -> bytes:
         Decoded reference.
 
     """ 
+    if isinstance(ref, Node):
+        return ref.encode()
+    
     if 0 < len(ref) < 32:
         return rlp.decode(ref)
 
