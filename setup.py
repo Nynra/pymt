@@ -7,6 +7,5 @@ setup(
     description="A module for Merkle Tries and proofs.",
     py_modules=["pymt"],
     package_dir={"": "src"},
-    install_requires=["cytoolz", "eth-hash", "eth-typing", 
-                      "eth-utils", "pycryptodome", "rlp", "toolz"],
+    install_requires=[list(map(str.strip, open("requirements.txt").readlines()))],
 )
