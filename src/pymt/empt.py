@@ -1,6 +1,6 @@
 from .mpt import MPT
-from .exceptions import InvalidReferenceError, KeyNotFoundError
-from .hash import keccak_hash
+from .utils.exceptions import InvalidReferenceError, KeyNotFoundError
+from .utils.hash import keccak_hash
 import rlp
 from _collections_abc import MutableMapping
 from .proof import Proof
@@ -294,7 +294,7 @@ class EMPT(MutableMapping):
                 )
         if not isinstance(key, bytes):
             raise TypeError("The key must be type bytes, not {}".format(type(key)))
-        
+
         # Create a reference, update the trie and add the data to the storage
         if not isinstance(value, (bytes, bytearray)):
             ref = DataReference(key, value.encode_rlp())
@@ -447,7 +447,9 @@ class SparseEMPT:
     # DUNDER METHODS
     def __getitem__(self, key: bytes) -> ...:
         """Wrapper for the get method."""
-        raise TypeError("The data is not stored in the SparseEMPT so getting values is not possible.")
+        raise TypeError(
+            "The data is not stored in the SparseEMPT so getting values is not possible."
+        )
 
     def __setitem__(self, key: bytes, value: bytes) -> ...:
         """Wrapper for the update method."""
@@ -594,7 +596,7 @@ class SparseEMPT:
     def encode_rlp(self) -> bytes:
         """Encode the trie to rlp."""
         return self._trie.encode()
-    
+
     @staticmethod
     def decode_rlp(data: bytes) -> "SparseEMPT":
         """Decode the trie from rlp."""
@@ -607,6 +609,7 @@ class SparseEMPT:
 class SEMPT(SparseEMPT):
 
     pass
+
 
 class RootEMPT:
     """
@@ -634,7 +637,7 @@ class RootEMPT:
     def secure(self) -> bool:
         """Return whether the trie is secure or not."""
         return self._trie.secure
-    
+
     def root_hash(self) -> bytes:
         """Return the hash of the root of the trie."""
         return self._trie.root_hash()
@@ -659,11 +662,11 @@ class RootEMPT:
         if not isinstance(proof, Proof):
             raise TypeError("The proof must be type Proof, not {}".format(type(proof)))
         return self._trie.verify_proof_of_exclusion(proof)
-    
+
     def encode_rlp(self) -> bytes:
         """Encode the trie to rlp."""
         return self._trie.encode()
-    
+
     @staticmethod
     def decode_rlp(data: bytes) -> "RootEMPT":
         """Decode the trie from rlp."""

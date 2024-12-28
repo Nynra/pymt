@@ -1,7 +1,7 @@
 from datetime import datetime
 import pickle
 from typing import List, Union
-from .hash import keccak_hash
+from .utils.hash import keccak_hash
 import rlp
 import json
 

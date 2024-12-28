@@ -1,0 +1,3 @@
+include src/pymt/__about__.py
+include requirement.txt
+include LICENCE

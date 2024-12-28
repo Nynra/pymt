@@ -5,3 +5,4 @@ eth-utils
 pycryptodome
 rlp
 toolz
+eciespy

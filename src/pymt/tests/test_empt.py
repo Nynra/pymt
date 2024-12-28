@@ -1,13 +1,8 @@
 import sys, os
-
-# Following lines are for assigning parent directory dynamically.
-dir_path = os.path.dirname(os.path.realpath(__file__))
-parent_dir_path = os.path.abspath(os.path.join(dir_path, os.pardir))
-sys.path.insert(0, parent_dir_path)
-from trie.empt import EMPT, DataReference, SparseEMPT, RootEMPT
-from trie.node import Node
-from trie.exceptions import KeyNotFoundError
-from trie.hash import keccak_hash
+from pymt.empt import EMPT, DataReference, SparseEMPT, RootEMPT
+from pymt.utils.node import Node
+from pymt.utils.exceptions import KeyNotFoundError
+from pymt.utils.hash import keccak_hash
 import rlp
 import unittest
 from unittest.mock import MagicMock
@@ -25,7 +20,7 @@ class DummyDataClass:
     Class that is used to test the capability to reference and save rlp encodable objects.
     """
 
-    def __init__(self, key : bytes, data : bytes) -> ...:
+    def __init__(self, key: bytes, data: bytes) -> ...:
         if not isinstance(key, bytes):
             raise TypeError("key must be of type bytes")
         if not isinstance(data, bytes):
@@ -35,14 +30,14 @@ class DummyDataClass:
 
     def encode_rlp(self) -> bytes:
         return rlp.encode([self.key, self.data])
-    
+
     @staticmethod
-    def decode_rlp(encoded : bytes) -> "DummyDataClass":
+    def decode_rlp(encoded: bytes) -> "DummyDataClass":
         if not isinstance(encoded, bytes):
             raise TypeError("encoded must be of type bytes")
         key, data = rlp.decode(encoded)
         return DummyDataClass(key, data)
-    
+
 
 class TestDataReference(unittest.TestCase):
     def test_equals(self):
@@ -146,12 +141,12 @@ class TestFullEmptNonSecure(unittest.TestCase, ProofOfInclusion, ProofOfExclusio
         test.encode_rlp.return_value = b"test"
         test.decode_rlp.return_value = test
 
-        self.trie.update(b'key1', test)
+        self.trie.update(b"key1", test)
         test.encode_rlp.assert_called_once()
-        self.assertIsInstance(self.trie.get(b'key1'), MagicMock)
+        self.assertIsInstance(self.trie.get(b"key1"), MagicMock)
 
         with self.assertRaises(NotImplementedError):
-            self.trie.update(b'key2', 2)
+            self.trie.update(b"key2", 2)
 
     def test_insert_get_one_long(self):
         """Test inserting one long key-value pair and then getting it."""
@@ -209,12 +204,12 @@ class TestFullEmptNonSecure(unittest.TestCase, ProofOfInclusion, ProofOfExclusio
         for cnt, i in enumerate(data):
             self.trie.update(str(cnt).encode(), i)
             i.encode_rlp.assert_called_once()
-        
+
         for cnt, i in enumerate(data):
             self.assertIsInstance(self.trie.get(str(cnt).encode()), MagicMock)
 
         with self.assertRaises(NotImplementedError):
-            self.trie.update(b'key2', 2)
+            self.trie.update(b"key2", 2)
 
     def test_insert_get_lots(self):
         """Test inserting lots of key-value pairs and then getting them."""
@@ -254,12 +249,12 @@ class TestFullEmptNonSecure(unittest.TestCase, ProofOfInclusion, ProofOfExclusio
         for cnt, i in enumerate(data):
             self.trie.update(str(cnt).encode(), i)
             i.encode_rlp.assert_called_once()
-        
+
         for cnt, i in enumerate(data):
             self.assertIsInstance(self.trie.get(str(cnt).encode()), MagicMock)
 
         with self.assertRaises(NotImplementedError):
-            self.trie.update(b'key2', 2)
+            self.trie.update(b"key2", 2)
 
     def test_delete_one(self):
         """Test deleting one key-value pair and then getting it."""
@@ -350,9 +345,7 @@ class TestFullEmptNonSecure(unittest.TestCase, ProofOfInclusion, ProofOfExclusio
 
     def test_delete_lots_rlp_encodable(self):
         random.seed(42)
-        rand_numbers = set(
-            [random.randint(1, 1000000) for _ in range(100)]
-        )
+        rand_numbers = set([random.randint(1, 1000000) for _ in range(100)])
 
         data = []
         for i in rand_numbers:
@@ -531,7 +524,6 @@ class TestSparseEmptNonSecure(unittest.TestCase, ProofOfInclusion, ProofOfExclus
     ROOT_HASH_AFTER_DELETES = (
         "0c3b843aeb53187e821416668635a9ac454579486ad1b06bd16a57b06ebfb9b0"
     )
-
 
     def _add_data(self):
         for k, v in self.data:

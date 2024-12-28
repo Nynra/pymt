@@ -1,8 +1,8 @@
 from enum import Enum
-from .hash import keccak_hash
-from .nibble_path import NibblePath
+from .utils.hash import keccak_hash
+from .utils.nibble_path import NibblePath
 from .proof import Proof
-from .node import (
+from .utils.node import (
     Node,
     Leaf,
     Extension,
@@ -10,7 +10,7 @@ from .node import (
     _prepare_reference_for_encoding,
     _prepare_reference_for_usage,
 )
-from .exceptions import (
+from .utils.exceptions import (
     KeyNotFoundError,
     ExtensionPathError,
     LeafPathError,
@@ -346,9 +346,9 @@ class MPT:
         proof_storage = {}
         for encoded_node in proof.proof:
             try:
-                proof_storage[
-                    Node.into_reference(Node.decode(encoded_node))
-                ] = encoded_node
+                proof_storage[Node.into_reference(Node.decode(encoded_node))] = (
+                    encoded_node
+                )
             except rlp.DecodingError:
                 return False
         valid = self._verify_proof_of_inclusion(
@@ -638,7 +638,7 @@ class MPT:
         """
         if self._root is None or self._root == Node.EMPTY_HASH:
             return False
-        
+
         node = self._get_node(node_ref)
 
         # If path is empty, our travel is over. Main `get` method
