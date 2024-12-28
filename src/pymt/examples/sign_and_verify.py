@@ -1,5 +1,5 @@
 import sys, os
-from pypsst import RsaKeyPair
+from pymt import RsaKeyPair
 
 # Create a new keyring
 keyring = RsaKeyPair()

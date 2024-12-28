@@ -1,5 +1,5 @@
 import sys, os
-from pypsst import RsaKeyPair
+from pymt import RsaKeyPair
 
 # Create a new keyring
 sender_keyring = RsaKeyPair()
@@ -15,5 +15,7 @@ print("Message: {}".format(message))
 print("Encrypted Message: {}\n".format(encrypted_message))
 
 # Decrypt the message
-decrypted_message = receiver_keyring.decrypt(encrypted_message)
+decrypted_message = receiver_keyring.decrypt(
+    encrypted_message, sender_keyring.public_key
+)
 print("Decrypted Message: {}".format(decrypted_message))
